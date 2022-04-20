@@ -1,0 +1,21 @@
+{
+  "name": "social-chat_node_v16",
+  "version": "1.0.0",
+  "description": "social-chat_node.js.v16 8년만에 새로 만들어 보렵니다.",
+  "main": "index.js",
+	
+	node
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://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@github.com/dragonslam/social-chat_node.js.v16.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dragonslam/social-chat_node.js.v16/issues"
+  },
+  "homepage": "https://github.com/dragonslam/social-chat_node.js.v16#readme"
+}
