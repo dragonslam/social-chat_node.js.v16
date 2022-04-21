@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "description": "social-chat_node.js.v16 8년만에 새로 만들어 보렵니다.",
   "main": "index.js",
-	
-	node
   "scripts": {
+    "start": "nodemon ./server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,5 +16,17 @@
   "bugs": {
     "url": "https://github.com/dragonslam/social-chat_node.js.v16/issues"
   },
-  "homepage": "https://github.com/dragonslam/social-chat_node.js.v16#readme"
+  "homepage": "https://github.com/dragonslam/social-chat_node.js.v16#readme",
+  "dependencies": {
+    "body-parser": "^1.20.0",
+    "bootstrap": "^5.1.3",
+    "bootstrap-colorpicker": "^3.4.0",
+    "cookie-parser": "^1.4.6",
+    "ejs": "^3.1.7",
+    "express": "4.17.3",
+    "express-handlebars": "^6.0.5",
+    "jquery": "^3.6.0",
+    "mysql": "^2.18.1",
+    "socket.io": "4.4.1"
+  }
 }
