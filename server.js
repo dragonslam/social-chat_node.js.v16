@@ -35,14 +35,15 @@ app.use(bodyParser.json());		// parse application/json
 app.use(cookieParser());		// parse cookie
 app.use(httpLogger);			// express default logger
 app.use(errorHandler);			// express error handler
-app.use('/public', express.static(__dirname + '/public/*'));
-app.use('/js' , express.static(__dirname + '/node_modules/jquery/dist')); // redirect JS jQuery
-app.use('/js' , express.static(__dirname + '/node_modules/bootstrap/dist/js')); // redirect bootstrap JS
-app.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css')); // redirect CSS bootstrap
-app.use('/js' , express.static(__dirname + '/node_modules/bootstrap-colorpicker/dist/js'));
-app.use('/css', express.static(__dirname + '/node_modules/bootstrap-colorpicker/dist/css'));
-app.use('/js/socket.io' , express.static(__dirname + '/node_modules/socket.io/client-dist'));
-
+app.use('/public/css', express.static(__dirname + '/public/css'));
+app.use('/public/js', express.static(__dirname + '/public/js'));
+app.use('/public/js' , express.static(__dirname + '/node_modules/jquery/dist')); // redirect JS jQuery
+app.use('/public/js' , express.static(__dirname + '/node_modules/popper.js/dist'));
+app.use('/public/css', express.static(__dirname + '/node_modules/bootstrap/dist/css')); // redirect CSS bootstrap
+app.use('/public/js' , express.static(__dirname + '/node_modules/bootstrap/dist/js')); // redirect bootstrap JS
+app.use('/public/css', express.static(__dirname + '/node_modules/bootstrap-colorpicker/dist/css'));
+app.use('/public/js' , express.static(__dirname + '/node_modules/bootstrap-colorpicker/dist/js'));
+app.use('/public/js/socket.io' , express.static(__dirname + '/node_modules/socket.io/client-dist'));
 
 // Template Engine setting.
 // Template default directory.{views}
@@ -91,5 +92,11 @@ const httpServer = http.createServer(app)
 /* *********************************************************************************
 ** Initialize Socket-io.
 ** ****************************************************************************** */
-const { Server } = require("socket.io");
+const { Server } = require('socket.io');
 const io = new Server(httpServer);
+
+
+/* *********************************************************************************
+** Initialize Chartting Server.
+** ****************************************************************************** */
+const chartServer = require('./modules/chat/chat-server.js').createServer(io);
