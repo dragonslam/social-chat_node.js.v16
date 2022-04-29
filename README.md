@@ -21,8 +21,8 @@ social-chat_node.js.v16 8년만에 새로 만들어 보렵니다.
 ```
 
 ## reference
-> https://gabrieltanner.org/blog/webrtc-video-broadcast
-> https://github.com/emyduke/webrtc-video-chart--Nodejs
-> https://github.com/peers/peerjs
-> https://github.com/peers/peerjs-server
+- https://gabrieltanner.org/blog/webrtc-video-broadcast
+- https://github.com/emyduke/webrtc-video-chart--Nodejs
+- https://github.com/peers/peerjs
+- https://github.com/peers/peerjs-server
 
