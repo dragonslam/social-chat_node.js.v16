@@ -20,6 +20,7 @@ function socialChat (
 	
 	this.isDebug		= true;
 	this.isCon			= false;
+	this.isVideo		= false;
 	this.defaultColor	= "#000000";
 	this.serverUri		= l.protocol + "//" + l.hostname;
 	this.serverPort		= (p ? ":"+p : "");
@@ -27,7 +28,7 @@ function socialChat (
 	this.peer			= undefined;
 	this.peers			= {};
 	this.video			= undefined;
-	this.currentUser	= undefined;	
+	this.currentUser	= undefined;
 	this.currentX		= 0;
 	this.currentY		= 0;
 	this.userLists		= {};
@@ -57,16 +58,17 @@ function socialChat (
 	this.btn_VideoOn	= this.getObject(btnVideoOn);
 	this.btn_VideoOff	= this.getObject(btnVideoOff);
 	
-	this.logging("Social Chat. initialize start.");
+	this.logging("SocialChat] initialize start.");
 	this.initializeUI();
 
 	if (typeof io != "function") {
 		this.logging("Not Found 'Node.js' module in 'spcked.io'.");
 	} else {
 		this.initializeEvent();
+		this.initializeVideoChat();
 	}
 
-	this.logging("Social Chat. initialize complete.");
+	this.logging("SocialChat] initialize complete.");
 };
 socialChat.prototype = {
 	IIF	: function(exp, val, defaultValue) {
@@ -175,7 +177,7 @@ socialChat.prototype = {
 		this.btn_VideoOn.removeClass('btn-info').addClass('btn-secondary');
 		this.btn_VideoOff.removeClass('btn-danger').addClass('btn-secondary');
 	
-		this.logging("Social Chat. initializeUI complete.");
+		this.logging("SocialChat] initializeUI complete.");
 	},
 	/**
 	 * 
@@ -216,61 +218,20 @@ socialChat.prototype = {
 				targrtUser = THIS.txt_UserName.val();
 			}
 			THIS.send('secret_chat', selectUser, targrtUser);
-		});		
-		THIS.btn_VideoOn.click(function(e) {
-			if(!THIS.btn_VideoOn.hasClass('btn-secondary')) {
-				THIS.connectPeerServer()
-					.then(() => {
-						THIS.createVideoRoom();
-					})
-					.then(() => {
-						THIS.btn_VideoJoin.removeClass('btn-primary').addClass('btn-secondary');
-						THIS.btn_VideoOn.removeClass('btn-info').addClass('btn-secondary');
-						THIS.btn_VideoOff.removeClass('btn-secondary').addClass('btn-danger');	
-					});				
-			}
 		});
-		THIS.btn_VideoOff.click(function(e) {
-			if(!THIS.btn_VideoOff.hasClass('btn-secondary')) {
-				THIS.disconnectVideoRoom()
-					.then(() => {
-						THIS.btn_VideoJoin.removeClass('btn-primary').addClass('btn-secondary');
-						THIS.btn_VideoOn.removeClass('btn-secondary').addClass('btn-info');
-						THIS.btn_VideoOff.removeClass('btn-danger').addClass('btn-secondary');	
-					});
-			}
-		});
-		THIS.btn_VideoJoin.click(function(e) {
-			if(!THIS.btn_VideoJoin.hasClass('btn-secondary')) {
-				THIS.connectPeerServer()
-					.then(() => {
-						THIS.createVideoRoom();
-					})
-					.then(() => {
-						THIS.btn_VideoJoin.removeClass('btn-primary').addClass('btn-secondary');
-						THIS.btn_VideoOn.removeClass('btn-info').addClass('btn-secondary');
-						THIS.btn_VideoOff.removeClass('btn-secondary').addClass('btn-danger');
-					});
-			}
-		});
-		
-		THIS.logging("Social Chat. initializeEvent complete.");
+		THIS.logging("SocialChat] initializeEvent complete.");
 	},
 	
 	/**
-	 * 
+	 * initialize Canvers Board
 	 */
 	initializeCanvers : function() {
 		var THIS	= this,
 			canvas	= (this.panel_Canvas[0] || undefined);
 			
-		// Canvas Drawing ..
-		// panel_Canvas panel_PenColor btn_ChangeColor btn_CanvasClear
-		
 		// Set ColorPicker.
-		this.setColorPicker(this.panel_PenColor);
-		
-		this.btn_ChangeColor.click(function() {
+		THIS.setColorPicker(this.panel_PenColor);
+		THIS.btn_ChangeColor.click(function() {
 	    	if (THIS.currentUser) {
 	    		THIS.panel_PenColor.colorpicker("show");
 	    	}
@@ -322,14 +283,57 @@ socialChat.prototype = {
 				}
 			});
 	    }
+		THIS.logging("SocialChat] initialize Canvas setting complete.");
 	},
 	
 	/**
+	* initialize Video Chat..
 	**/	
+	initializeVideoChat : function() {
+		var THIS = this;
+		THIS.btn_VideoOn.click(function(e) {
+			if(!THIS.btn_VideoOn.hasClass('btn-secondary')) {
+				THIS.btn_VideoOn.removeClass('btn-info').addClass('btn-secondary');
+				THIS.connectPeerServer()
+					.then(() => {
+						THIS.createVideoRoom();
+					})
+					.then(() => {
+						THIS.btn_VideoJoin.removeClass('btn-primary').addClass('btn-secondary');						
+						THIS.btn_VideoOff.removeClass('btn-secondary').addClass('btn-danger');	
+					});				
+			}
+		});
+		THIS.btn_VideoOff.click(function(e) {
+			if(!THIS.btn_VideoOff.hasClass('btn-secondary')) {
+				THIS.btn_VideoOff.removeClass('btn-danger').addClass('btn-secondary');	
+				THIS.disconnectVideoRoom()
+					.then(() => {
+						THIS.btn_VideoJoin.removeClass('btn-primary').addClass('btn-secondary');
+						THIS.btn_VideoOn.removeClass('btn-secondary').addClass('btn-info');
+						THIS.panel_Video.empty();
+					});
+			}
+		});
+		THIS.btn_VideoJoin.click(function(e) {
+			if(!THIS.btn_VideoJoin.hasClass('btn-secondary')) {
+				THIS.btn_VideoJoin.removeClass('btn-primary').addClass('btn-secondary');
+				THIS.connectPeerServer()
+					.then(() => {
+						THIS.createVideoRoom();
+					})
+					.then(() => {
+						THIS.btn_VideoOn.removeClass('btn-info').addClass('btn-secondary');
+						THIS.btn_VideoOff.removeClass('btn-secondary').addClass('btn-danger');
+					});
+			}
+		});
+		THIS.logging('Video Chat] initializeVideoChat complete.');
+	},
 	createVideoRoom : async function() {
 		var THIS = this;
 		
-		THIS.logging('video] initializeVideo start..');
+		THIS.logging('Video Chat] createVideoRoom start..');
 		THIS.video = document.createElement('video');
 		THIS.video.muted = true;
 		THIS.currentUser.isHost  = true;
@@ -346,7 +350,7 @@ socialChat.prototype = {
 			}
 		};
 		const addVideoStream = function(type, video, stream) {
-			THIS.logging('video] addVideoStream('+ type +')');
+			THIS.logging('Video Chat] addVideoStream('+ type +')');
 			video.srcObject = stream;
 			video.addEventListener('loadedmetadata', function() {
 				video.play();
@@ -361,7 +365,7 @@ socialChat.prototype = {
 			}
 		};
 		const connectToNewUser = function(userId, stream) {
-			THIS.logging('video] connectToNewUser('+userId+')');
+			THIS.logging('Video Chat] connectToNewUser('+userId+')');
 			
 			const call = THIS.peer.call(userId, stream);
 			const video= document.createElement('video');
@@ -375,48 +379,65 @@ socialChat.prototype = {
 			THIS.peers[userId] = call;
 		};
 		
-		navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(function(stream) {
-			addVideoStream('self', THIS.video, stream);
-			
-			THIS.peer.on('call', call => {
-				THIS.logging('video] peer.on.call()');
-				call.answer(stream);
-				const userVideo = document.createElement('video');
-				call.on('stream', userVideoStream => {
-					THIS.logging('video] peer.on.call() -> userVideoStream');
-					addVideoStream('guest', userVideo, userVideoStream);
+		navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(
+			function(stream) {
+				addVideoStream('self', THIS.video, stream);
+
+				THIS.peer.on('call', call => {
+					THIS.logging('Video Chat] peer.on.call()');
+					call.answer(stream);
+					const userVideo = document.createElement('video');
+					call.on('stream', userVideoStream => {
+						THIS.logging('Video Chat] peer.on.call() -> userVideoStream');
+						addVideoStream('guest', userVideo, userVideoStream);
+					});
 				});
-		  	});
-			THIS.socket.on('user-connected', userId => {
-				THIS.logging('video] user-connected('+ userId +')');
+				THIS.socket.on('user-connected', userId => {
+					THIS.logging('Video Chat] user-connected('+ userId +')');
+					setTimeout(() => {
+						connectToNewUser(userId, stream);
+						THIS.logging('Video Chat] user-connected('+ userId +') successfully!');
+					}, 3000);
+				});
+			}, 
+			function(e) {
+				THIS.logging('Video Chat] '+ (e['message']||'Could not start video source!'));
+				THIS.peer.on('call', call => {
+					THIS.logging('Video Chat] peer.on.call().None');
+					const userVideo = document.createElement('video');
+					call.on('stream', userVideoStream => {
+						THIS.logging('Video Chat] peer.on.call().None -> userVideoStream');
+						addVideoStream('guest', userVideo, userVideoStream);
+					});
+				});
+				THIS.socket.on('user-connected', userId => {
+					THIS.logging('Video Chat] user-connected('+ userId +').None');
+				});
+			});
+		
+		if(!THIS.isVideo) {
+			THIS.peer.on('open', peerId => {
+				THIS.logging('Video Chat] peer-open('+ peerId +')')
+				THIS.currentUser.peer_id = peerId;
+				THIS.socket.emit('join-room', THIS.currentUser.room_id, THIS.currentUser.peer_id);
+				THIS.socket.emit('sync_status', THIS.currentUser);
+			});
+			THIS.socket.on('user-disconnected', userId => {
+				THIS.logging('Video Chat] user-disconnected('+ userId +')');
+				THIS.currentVideoRoomId = '';
+				if (THIS.peers[userId]) THIS.peers[userId].close();
 				setTimeout(() => {
-					connectToNewUser(userId, stream);
-					THIS.logging('video] user-connected('+ userId +') successfully!');
+					if (THIS.panel_VideoGroup.find('video').length == 0) {
+						THIS.showObject(THIS.panel_CanvasGroup, true);
+						THIS.showObject(THIS.panel_VideoGroup, false);
+					}
+					THIS.logging('Video Chat] user-disconnected('+ userId +') complete!');				
 				}, 3000);
 			});
-		});
-
-		THIS.socket.on('user-disconnected', userId => {
-			THIS.logging('video] user-disconnected('+ userId +')');
-			THIS.currentVideoRoomId = '';
-			if (THIS.peers[userId]) THIS.peers[userId].close();
-			setTimeout(() => {
-				if (THIS.panel_VideoGroup.find('video').length == 0) {
-					THIS.showObject(THIS.panel_CanvasGroup, true);
-					THIS.showObject(THIS.panel_VideoGroup, false);
-				}
-				THIS.logging('video] user-disconnected('+ userId +') complete!');				
-			}, 3000);
-		});
-		
-		THIS.peer.on('open', peerId => {
-			THIS.logging('video] peer-open('+ peerId +')')
-			THIS.currentUser.peer_id = peerId;
-			THIS.socket.emit('join-room', THIS.currentUser.room_id, THIS.currentUser.peer_id);
-			THIS.socket.emit('sync_status', THIS.currentUser);
-		});
-		
-		THIS.logging('video] initializeVideo complate..');
+			THIS.isVideo = true;
+		}
+		THIS.currentVideoRoomId = THIS.currentUser.room_id;
+		THIS.logging('Video Chat] createVideoRoom complate. {'+ THIS.currentVideoRoomId +'}');
 		return THIS;
 	},
 	connectPeerServer: async function() {
@@ -431,22 +452,24 @@ socialChat.prototype = {
 		return this;
 	},
 	connectVideoRoom : function(roomId) {
-		var THIS = this;
-		THIS.logging('connectVideoRoom('+ roomId +')');
-		if (roomId != THIS.currentUser['room_id']) {
-			THIS.currentVideoRoomId = roomId;
-			THIS.btn_VideoJoin.removeClass('btn-secondary').addClass('btn-primary');
-			THIS.btn_VideoOn.removeClass('btn-info').addClass('btn-secondary');
-			THIS.btn_VideoOff.removeClass('btn-danger').addClass('btn-secondary');
+		if (roomId != this.currentUser['room_id'] && roomId != this.currentVideoRoomId) {
+			this.logging('Video Chat] connectVideoRoom('+ roomId +')');
+			this.currentVideoRoomId = roomId;
+			this.btn_VideoJoin.removeClass('btn-secondary').addClass('btn-primary');
+			this.btn_VideoOn.removeClass('btn-info').addClass('btn-secondary');
+			this.btn_VideoOff.removeClass('btn-danger').addClass('btn-secondary');
 		}
+		return this;
 	},
 	disconnectVideoRoom: async function() {
-		var THIS = this;
-		THIS.logging('disconnectVideoRoom('+ THIS.currentUser.room_id +')');
-		THIS.socket.emit('disconnect-room');
-		THIS.currentUser.room_id = '';
-		THIS.currentUser.peer_id = '';
-		THIS.socket.emit('sync_status', THIS.currentUser);
+		if (this.currentUser['room_id']) {
+			this.logging('Video Chat] disconnectVideoRoom('+ this.currentUser.room_id +')');
+			this.socket.emit('disconnect-room');
+			this.currentUser.room_id = '';
+			this.currentUser.peer_id = '';
+			this.socket.emit('sync_status', this.currentUser);	
+		}
+		return this;
 	},
 
 	
@@ -494,17 +517,12 @@ socialChat.prototype = {
 		});
 		
 		THIS.socket.on('update_users', function (data) {					
-			THIS.logging("update_users - " + data.users[data.users.length-1].name);
-			console.log("update_users", data);
-	
-			//THIS.panel_UserName.html("");
+			//THIS.logging("update_users - " + data.users[data.users.length-1].name);
+			//console.log("update_users", data);	
 			for(var i=data.users.length-1; i>=0; i--){ 
-				var user = data.users[i];
-				if (user && user.id) {
-					if (THIS.txt_UserName.val() == user.name) {
-						THIS.currentUser = user;
-						break;
-					}
+				if (THIS.txt_UserName.val() == data.users[i].name) {
+					THIS.currentUser = data.users[i];
+					break;
 				}
 			}
 			for(var i=0; i<data.users.length; i++){ 
