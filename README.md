@@ -1,5 +1,7 @@
 # social-chat_node.js.v16
-social-chat_node.js.v16 8년만에 새로 만들어 보렵니다. 
+> Node.js를 활용한 Chatting 구현.
+- Canvers를 통한 공유 칠판.
+- P2P Video Chat 구현.
 
 ## develop ide 
 - goorm ide : https://ide.goorm.io
