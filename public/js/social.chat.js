@@ -442,12 +442,9 @@ socialChat.prototype = {
 	},
 	connectPeerServer: async function() {
 		if(!this.peer) {
-			//THIS.peer = new Peer();
-			this.peer = new Peer(undefined, {
-				host	: 'peerjs-server.herokuapp.com', 
-				secure	: true, 
-				port	: 443
-			});	
+			//this.peer = new Peer();
+			//this.peer = new Peer(undefined, {host:'peerjs-server.herokuapp.com', secure:true, port:443});	
+			this.peer = new Peer(undefined, {host:'peerjs-server.run.goorm.io', secure:true, port:443});	
 		}
 		return this;
 	},
