@@ -7,21 +7,15 @@ social-chat_node.js.v16 8년만에 새로 만들어 보렵니다.
 
 ## npm install 
 ```c
-> npm install -g nodemon
-> npm install express --save
-> npm install express mysql
-> npm install body-parser
-> npm install cookie-parser
-> npm install express-handlebars
-> npm install ejs
-> npm install --save --save-exact socket.io express
-> npm install jquery
-> npm install bootstrap
-> npm install bootstrap-colorpicker
-> npm install popper
+> npm install -g nodemon peer
+> npm install mysql
+> npm install express ejs --save
+> npm install express-handlebars body-parser cookie-parser
+> npm install socket.io --save
+> npm install jquery popper bootstrap bootstrap-colorpicker
 ```
 
-## npm start
+## nodeJs start
 ```c
 > npm start
 ```
