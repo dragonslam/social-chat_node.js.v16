@@ -7,6 +7,9 @@ class SocialChartSession {
 		this.color	= "";
 		this.point_x= 0;
 		this.point_y= 0;
+		this.room_id= "";
+		this.peer_id= "";
+		this.isHost = false;
 	}
 }
 

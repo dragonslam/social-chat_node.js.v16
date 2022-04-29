@@ -1,9 +1,12 @@
 function socialChat (
 	w,
-	panelChatMsg, panelLogMsg, panelUserName, panelCanvasView, panelPenColor, panelUserPoint, panelTemplate,
+	panelChatMsg, panelLogMsg, panelUserName, 
+	panelCanvasGroup, panelVideoGroup, 
+	panelCanvasView, panelPenColor, panelUserPoint, panelTemplate, panelVideo,
 	txtUserName, txtChatMsg, txtSelectUser, 
 	btnSend, btnSelect, btnConnect, btnDisconnect,
-	btnChangeColor, btnCanvasClear
+	btnChangeColor, btnCanvasClear,
+	btnVideoJoin, btnVideoOn, btnVideoOff
 	
 ) {
 	if (!w) {
@@ -18,20 +21,29 @@ function socialChat (
 	this.isDebug		= true;
 	this.isCon			= false;
 	this.defaultColor	= "#000000";
-	this.serverUri		= l.protocol + "//" + l.hostname + (p ? ":"+p : "");
+	this.serverUri		= l.protocol + "//" + l.hostname;
+	this.serverPort		= (p ? ":"+p : "");
 	this.socket			= undefined;
-	this.currentUser	= undefined;
+	this.peer			= undefined;
+	this.peers			= {};
+	this.video			= undefined;
+	this.currentUser	= undefined;	
 	this.currentX		= 0;
 	this.currentY		= 0;
 	this.userLists		= {};
+	this.room_uuid		= (CHAT_UUID || ('videoChat:'+Date.now()));
+	this.currentVideoRoomId = '';
 
 	this.panel_ChatMsg	= this.getObject(panelChatMsg);
 	this.panel_LogMsg	= this.getObject(panelLogMsg);
 	this.panel_UserName	= this.getObject(panelUserName);
+	this.panel_CanvasGroup = this.getObject(panelCanvasGroup);
+	this.panel_VideoGroup  = this.getObject(panelVideoGroup);
 	this.panel_Canvas	= this.getObject(panelCanvasView);
 	this.panel_PenColor	= this.getObject(panelPenColor);
 	this.panel_UserPoint= this.getObject(panelUserPoint);
 	this.panel_Template	= this.getObject(panelTemplate);
+	this.panel_Video	= this.getObject(panelVideo);
 	this.txt_ChatMsg	= this.getObject(txtChatMsg);
 	this.txt_UserName	= this.getObject(txtUserName);
 	this.txt_SelectUser	= this.getObject(txtSelectUser);
@@ -41,6 +53,9 @@ function socialChat (
 	this.btn_Disconnect	= this.getObject(btnDisconnect);
 	this.btn_ChangeColor= this.getObject(btnChangeColor);
 	this.btn_CanvasClear= this.getObject(btnCanvasClear);
+	this.btn_VideoJoin	= this.getObject(btnVideoJoin);
+	this.btn_VideoOn	= this.getObject(btnVideoOn);
+	this.btn_VideoOff	= this.getObject(btnVideoOff);
 	
 	this.logging("Social Chat. initialize start.");
 	this.initializeUI();
@@ -92,8 +107,8 @@ socialChat.prototype = {
 	},
 	logging : function(msg) {
 		if (typeof msg == "string" && String(msg) != "") {
-			if (this.isDebug && window.console) {
-				window.console.log.apply(window, arguments);
+			if (this.isDebug && console) {
+				console.log.apply(window, arguments);
 			}
 			this.append(this.panel_LogMsg, msg +"<br/>");
 			this.panelScrolling(this.panel_LogMsg);
@@ -152,6 +167,13 @@ socialChat.prototype = {
 	initializeUI : function() {
 		this.showObject(this.btn_Connect, true);
 		this.showObject(this.btn_Disconnect, false);
+		
+		this.showObject(this.panel_CanvasGroup, true);
+		this.showObject(this.panel_VideoGroup, false);
+		
+		this.btn_VideoJoin.removeClass('btn-primary').addClass('btn-secondary');
+		this.btn_VideoOn.removeClass('btn-info').addClass('btn-secondary');
+		this.btn_VideoOff.removeClass('btn-danger').addClass('btn-secondary');
 	
 		this.logging("Social Chat. initializeUI complete.");
 	},
@@ -161,31 +183,31 @@ socialChat.prototype = {
 	initializeEvent : function() {
 		var THIS = this;
 	
-		this.btn_Connect.click(function(e) {
+		THIS.btn_Connect.click(function(e) {
 			THIS.connectServer();
 		});
-		this.btn_Disconnect.click(function(e) {	
+		THIS.btn_Disconnect.click(function(e) {	
 			THIS.disconnectServer();
 		});
-		this.txt_UserName.keypress(function(e) {				
-			if(e.which == 13 && $(this).val() != "") {
+		THIS.txt_UserName.keypress(function(e) {				
+			if(e.which == 13 && $(this).val() != '') {
 				THIS.connectServer();
 			}
 		});
-		this.btn_Send.click(function(e) {
-			if (THIS.txt_ChatMsg && THIS.txt_ChatMsg.val() != "") {
-				THIS.send("send_chat", THIS.txt_ChatMsg.val());
-				THIS.txt_ChatMsg.val("");
+		THIS.btn_Send.click(function(e) {
+			if (THIS.txt_ChatMsg && THIS.txt_ChatMsg.val() != '') {
+				THIS.send('send_chat', THIS.txt_ChatMsg.val());
+				THIS.txt_ChatMsg.val('');
 			}	
 		});
-		this.txt_ChatMsg.keypress(function(e) {	
-			if(e.which == 13 && $(this).val() != "") {
+		THIS.txt_ChatMsg.keypress(function(e) {	
+			if(e.which == 13 && $(this).val() != '') {
 				THIS.btn_Send.click();
 			}
 		});
-		this.btn_Select.click(function(e) {	
-			var selectUser	= "";
-			var targrtUser	= "";
+		THIS.btn_Select.click(function(e) {	
+			var selectUser	= '';
+			var targrtUser	= '';
 	
 			if (THIS.txt_SelectUser) 
 				selectUser = THIS.txt_SelectUser.val();
@@ -193,10 +215,46 @@ socialChat.prototype = {
 			if (THIS.txt_UserName) {
 				targrtUser = THIS.txt_UserName.val();
 			}
-			THIS.send("secret_chat", selectUser, targrtUser);
+			THIS.send('secret_chat', selectUser, targrtUser);
+		});		
+		THIS.btn_VideoOn.click(function(e) {
+			if(!THIS.btn_VideoOn.hasClass('btn-secondary')) {
+				THIS.connectPeerServer()
+					.then(() => {
+						THIS.createVideoRoom();
+					})
+					.then(() => {
+						THIS.btn_VideoJoin.removeClass('btn-primary').addClass('btn-secondary');
+						THIS.btn_VideoOn.removeClass('btn-info').addClass('btn-secondary');
+						THIS.btn_VideoOff.removeClass('btn-secondary').addClass('btn-danger');	
+					});				
+			}
+		});
+		THIS.btn_VideoOff.click(function(e) {
+			if(!THIS.btn_VideoOff.hasClass('btn-secondary')) {
+				THIS.disconnectVideoRoom()
+					.then(() => {
+						THIS.btn_VideoJoin.removeClass('btn-primary').addClass('btn-secondary');
+						THIS.btn_VideoOn.removeClass('btn-secondary').addClass('btn-info');
+						THIS.btn_VideoOff.removeClass('btn-danger').addClass('btn-secondary');	
+					});
+			}
+		});
+		THIS.btn_VideoJoin.click(function(e) {
+			if(!THIS.btn_VideoJoin.hasClass('btn-secondary')) {
+				THIS.connectPeerServer()
+					.then(() => {
+						THIS.createVideoRoom();
+					})
+					.then(() => {
+						THIS.btn_VideoJoin.removeClass('btn-primary').addClass('btn-secondary');
+						THIS.btn_VideoOn.removeClass('btn-info').addClass('btn-secondary');
+						THIS.btn_VideoOff.removeClass('btn-secondary').addClass('btn-danger');
+					});
+			}
 		});
 		
-		this.logging("Social Chat. initializeEvent complete.");
+		THIS.logging("Social Chat. initializeEvent complete.");
 	},
 	
 	/**
@@ -265,8 +323,133 @@ socialChat.prototype = {
 			});
 	    }
 	},
+	
+	/**
+	**/	
+	createVideoRoom : async function() {
+		var THIS = this;
+		
+		THIS.logging('video] initializeVideo start..');
+		THIS.video = document.createElement('video');
+		THIS.video.muted = true;
+		THIS.currentUser.isHost  = true;
+		THIS.currentUser.room_id = THIS.currentVideoRoomId || THIS.room_uuid;		
+		
+		const setVideoSize = function() {
+			var oGrid = THIS.panel_VideoGroup.find('div.video-grid');
+			if (oGrid.find('video').length > 1) {
+				oGrid.find('video').each(function() {
+					$(this).width(270).height(210);
+				});
+			} else {
+				oGrid.find('video').width('100%').height('100%');
+			}
+		};
+		const addVideoStream = function(type, video, stream) {
+			THIS.logging('video] addVideoStream('+ type +')');
+			video.srcObject = stream;
+			video.addEventListener('loadedmetadata', function() {
+				video.play();
+			});
+			if (type == 'guest') {
+				THIS.showObject(THIS.panel_CanvasGroup, false);
+				THIS.showObject(THIS.panel_VideoGroup, true);
+				THIS.panel_VideoGroup.find('div.video-grid').append(video);
+				setVideoSize();
+			} else {
+				THIS.panel_Video.append(video);	
+			}
+		};
+		const connectToNewUser = function(userId, stream) {
+			THIS.logging('video] connectToNewUser('+userId+')');
+			
+			const call = THIS.peer.call(userId, stream);
+			const video= document.createElement('video');
+			call.on('stream', function(userVideoStream) {
+				addVideoStream('guest', video, userVideoStream)
+			});
+			call.on('close', function() {
+				video.remove();
+				setVideoSize();
+			});
+			THIS.peers[userId] = call;
+		};
+		
+		navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(function(stream) {
+			addVideoStream('self', THIS.video, stream);
+			
+			THIS.peer.on('call', call => {
+				THIS.logging('video] peer.on.call()');
+				call.answer(stream);
+				const userVideo = document.createElement('video');
+				call.on('stream', userVideoStream => {
+					THIS.logging('video] peer.on.call() -> userVideoStream');
+					addVideoStream('guest', userVideo, userVideoStream);
+				});
+		  	});
+			THIS.socket.on('user-connected', userId => {
+				THIS.logging('video] user-connected('+ userId +')');
+				setTimeout(() => {
+					connectToNewUser(userId, stream);
+					THIS.logging('video] user-connected('+ userId +') successfully!');
+				}, 3000);
+			});
+		});
 
+		THIS.socket.on('user-disconnected', userId => {
+			THIS.logging('video] user-disconnected('+ userId +')');
+			THIS.currentVideoRoomId = '';
+			if (THIS.peers[userId]) THIS.peers[userId].close();
+			setTimeout(() => {
+				if (THIS.panel_VideoGroup.find('video').length == 0) {
+					THIS.showObject(THIS.panel_CanvasGroup, true);
+					THIS.showObject(THIS.panel_VideoGroup, false);
+				}
+				THIS.logging('video] user-disconnected('+ userId +') complete!');				
+			}, 3000);
+		});
+		
+		THIS.peer.on('open', peerId => {
+			THIS.logging('video] peer-open('+ peerId +')')
+			THIS.currentUser.peer_id = peerId;
+			THIS.socket.emit('join-room', THIS.currentUser.room_id, THIS.currentUser.peer_id);
+			THIS.socket.emit('sync_status', THIS.currentUser);
+		});
+		
+		THIS.logging('video] initializeVideo complate..');
+		return THIS;
+	},
+	connectPeerServer: async function() {
+		if(!this.peer) {
+			//THIS.peer = new Peer();
+			this.peer = new Peer(undefined, {
+				host	: 'peerjs-server.herokuapp.com', 
+				secure	: true, 
+				port	: 443
+			});	
+		}
+		return this;
+	},
+	connectVideoRoom : function(roomId) {
+		var THIS = this;
+		THIS.logging('connectVideoRoom('+ roomId +')');
+		if (roomId != THIS.currentUser['room_id']) {
+			THIS.currentVideoRoomId = roomId;
+			THIS.btn_VideoJoin.removeClass('btn-secondary').addClass('btn-primary');
+			THIS.btn_VideoOn.removeClass('btn-info').addClass('btn-secondary');
+			THIS.btn_VideoOff.removeClass('btn-danger').addClass('btn-secondary');
+		}
+	},
+	disconnectVideoRoom: async function() {
+		var THIS = this;
+		THIS.logging('disconnectVideoRoom('+ THIS.currentUser.room_id +')');
+		THIS.socket.emit('disconnect-room');
+		THIS.currentUser.room_id = '';
+		THIS.currentUser.peer_id = '';
+		THIS.socket.emit('sync_status', THIS.currentUser);
+	},
 
+	
 
 	/**
 	 * connect chat server.
@@ -286,7 +469,7 @@ socialChat.prototype = {
 		}
 	
 		THIS.logging("Try connecting.");
-		THIS.socket = io.connect(THIS.serverUri, {'force new connection': true } );
+		THIS.socket = io.connect((THIS.serverUri + THIS.serverPort), {'force new connection': true } );		
 		
 		// 서버에 연결되면 연결 메시지 보여줌
 		THIS.socket.on('connect', function(){
@@ -296,6 +479,7 @@ socialChat.prototype = {
 			THIS.appendMsg( "connected server.", true);	
 			THIS.txt_UserName.attr("readonly", true);
 			THIS.txt_UserName.css({'backgroundColor': '#333'});
+			THIS.btn_VideoOn.removeClass('btn-secondary').addClass('btn-primary');
 		});
 	
 		THIS.socket.on('checkvalidation', function (result) {		
@@ -310,15 +494,25 @@ socialChat.prototype = {
 		});
 		
 		THIS.socket.on('update_users', function (data) {					
-			THIS.logging("update_users - " + data.peers[data.peers.length-1].name);
+			THIS.logging("update_users - " + data.users[data.users.length-1].name);
+			console.log("update_users", data);
 	
 			//THIS.panel_UserName.html("");
-			for(var i=0; i<data.peers.length; i++){ 
-				var user = data.peers[i];
+			for(var i=data.users.length-1; i>=0; i--){ 
+				var user = data.users[i];
 				if (user && user.id) {
-					if (!THIS.userLists["u_"+ user.id]) {
-						THIS.userLists["u_"+ user.id] = user;
+					if (THIS.txt_UserName.val() == user.name) {
+						THIS.currentUser = user;
+						break;
 					}
+				}
+			}
+			for(var i=0; i<data.users.length; i++){ 
+				var user = data.users[i];
+				if (user && user.id) {
+					if(!THIS.userLists["u_"+ user.id]) {
+						THIS.userLists["u_"+ user.id] = user;
+					}					
 					THIS.showUserList(user);
 				}
 			}
@@ -376,7 +570,9 @@ socialChat.prototype = {
 		THIS.socket.on("disconnect" , function () {	
 			THIS.logging( "disconnected server." );
 			THIS.deleteUser(THIS.currentUser);
-			THIS.socket = undefined;
+			THIS.socket= undefined;
+			THIS.peer  = undefined;
+			THIS.video = undefined;
 			THIS.isCon = false;
 		});
 		
@@ -400,6 +596,9 @@ socialChat.prototype = {
 		this.appendMsg( "disconnected server.", true);	
 		this.showObject(this.btn_Disconnect, false);
 		this.showObject(this.btn_Connect, true);
+		this.btn_VideoJoin.removeClass('btn-info').addClass('btn-secondary');
+		this.btn_VideoOn.removeClass('btn-primary').addClass('btn-secondary');
+		this.btn_VideoOff.removeClass('btn-danger').addClass('btn-secondary');
 	
 		if (this.socket)
 			this.socket.disconnect();
@@ -423,11 +622,14 @@ socialChat.prototype = {
 			
 			var isCurrentUser = false;
 			if (this.txt_UserName.val() == user.name) {
-				this.currentUser = user;
 				isCurrentUser = true;
 			}
 			if (isCurrentUser) {
 				this.panel_PenColor.css("backgroundColor", user.color);
+			} else {
+				if (user.room_id && user.room_id != '') {
+					this.connectVideoRoom(user.room_id);
+				}
 			}
 			
 			var userPicker,
@@ -458,6 +660,11 @@ socialChat.prototype = {
 					this.setColorPicker(userPanel.find("span.color-picker"));
 				}
 			}
+			if (user.peer_id != '') {
+				userPanel.find("strong").text('# '+ user.name + ' #');
+			} else {
+				userPanel.find("strong").text(user.name);
+			}
 			userPanel.find("span.badge").empty().append(user.count);
 			userPanel.find("span.color-picker").css("backgroundColor", user.color);
 			
@@ -467,8 +674,10 @@ socialChat.prototype = {
 	
 	deleteUser : function(user) {
 		if (user && user.id) {
-			
 			if (user.id == this.currentUser.id) {
+				if (this.currentUser.room_id && this.peers[this.currentUser.room_id]) {
+					this.peers[this.currentUser.room_id].close();
+				}
 				this.panel_UserName.empty();
 				this.panel_UserPoint.empty();
 				this.txt_UserName.val("").attr("readonly", false);

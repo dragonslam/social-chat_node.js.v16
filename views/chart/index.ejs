@@ -20,18 +20,19 @@
 	<script>window.jQuery || document.write('<script src="/js/jquery.min.js">\x3C/script>')</script>
 	
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+	<script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+	<script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+	<script defer src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
 	
 	<link rel="stylesheet" href="/public/css/bootstrap-colorpicker.min.css">
 	<link rel="stylesheet" href="/public/css/social.chat.css">
 	
-	<script src="/public/js/bootstrap-colorpicker.min.js"></script>
-	<script src="/public/js/socket.io/socket.io.js"></script>
-	<script src="/public/js/common.js"></script>
-	<script src="/public/js/social.chat.js"></script>
-	<script src="/public/js/canvers.GraphicPen.js"></script>
-	<script src="/public/js/canvers.DrawingBoard.js"></script>
+	<script defer src="/public/js/bootstrap-colorpicker.min.js"></script>
+	<script defer src="/public/js/socket.io/socket.io.js"></script>
+	<script defer src="/public/js/common.js"></script>
+	<script defer src="/public/js/social.chat.js"></script>
+	<script defer src="/public/js/canvers.GraphicPen.js"></script>
+	<script defer src="/public/js/canvers.DrawingBoard.js"></script>
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
@@ -41,31 +42,40 @@
 	</symbol>
 	<symbol id="home" viewBox="0 0 16 16">
 		<path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4H2.5z"/>
+	</symbol>	
+	<symbol id="table" viewBox="0 0 16 16">
+		<path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm15 2h-4v3h4V4zm0 4h-4v3h4V8zm0 4h-4v3h3a1 1 0 0 0 1-1v-2zm-5 3v-3H6v3h4zm-5 0v-3H1v2a1 1 0 0 0 1 1h3zm-4-4h4V8H1v3zm0-4h4V4H1v3zm5-3v3h4V4H6zm4 4H6v3h4V8z"/>
+	</symbol>	
+	<symbol id="grid" viewBox="0 0 16 16">
+		<path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
+	</symbol>
+	<symbol id="files" viewBox="0 0 16 16">
+    	<path d="M13 0H6a2 2 0 0 0-2 2 2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2 2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm0 13V4a2 2 0 0 0-2-2H5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1zM3 4a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4z"/>
+  	</symbol>
+	<symbol id="film" viewBox="0 0 16 16">
+		<path d="M0 1a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V1zm4 0v6h8V1H4zm8 8H4v6h8V9zM1 1v2h2V1H1zm2 3H1v2h2V4zM1 7v2h2V7H1zm2 3H1v2h2v-2zm-2 3v2h2v-2H1zM15 1h-2v2h2V1zm-2 3v2h2V4h-2zm2 3h-2v2h2V7zm-2 3v2h2v-2h-2zm2 3h-2v2h2v-2z"/>
+	</symbol>
+	<symbol id="github" viewBox="0 0 16 16">
+		<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+	</symbol>
+	<symbol id="twitter" viewBox="0 0 16 16">
+		<path d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z"/>
+	</symbol>
+	<symbol id="facebook" viewBox="0 0 16 16">
+		<path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951z"/>
 	</symbol>
 	<symbol id="speedometer2" viewBox="0 0 16 16">
 		<path d="M8 4a.5.5 0 0 1 .5.5V6a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4zM3.732 5.732a.5.5 0 0 1 .707 0l.915.914a.5.5 0 1 1-.708.708l-.914-.915a.5.5 0 0 1 0-.707zM2 10a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H2.5A.5.5 0 0 1 2 10zm9.5 0a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H12a.5.5 0 0 1-.5-.5zm.754-4.246a.389.389 0 0 0-.527-.02L7.547 9.31a.91.91 0 1 0 1.302 1.258l3.434-4.297a.389.389 0 0 0-.029-.518z"/>
 		<path fill-rule="evenodd" d="M0 10a8 8 0 1 1 15.547 2.661c-.442 1.253-1.845 1.602-2.932 1.25C11.309 13.488 9.475 13 8 13c-1.474 0-3.31.488-4.615.911-1.087.352-2.49.003-2.932-1.25A7.988 7.988 0 0 1 0 10zm8-7a7 7 0 0 0-6.603 9.329c.203.575.923.876 1.68.63C4.397 12.533 6.358 12 8 12s3.604.532 4.923.96c.757.245 1.477-.056 1.68-.631A7 7 0 0 0 8 3z"/>
 	</symbol>
-	<symbol id="table" viewBox="0 0 16 16">
-		<path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm15 2h-4v3h4V4zm0 4h-4v3h4V8zm0 4h-4v3h3a1 1 0 0 0 1-1v-2zm-5 3v-3H6v3h4zm-5 0v-3H1v2a1 1 0 0 0 1 1h3zm-4-4h4V8H1v3zm0-4h4V4H1v3zm5-3v3h4V4H6zm4 4H6v3h4V8z"/>
-	</symbol>
 	<symbol id="people-circle" viewBox="0 0 16 16">
 		<path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
 		<path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
 	</symbol>
-	<symbol id="grid" viewBox="0 0 16 16">
-		<path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
-	</symbol>
-	<symbol id="speedometer2" viewBox="0 0 16 16">
-    	<path d="M8 4a.5.5 0 0 1 .5.5V6a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4zM3.732 5.732a.5.5 0 0 1 .707 0l.915.914a.5.5 0 1 1-.708.708l-.914-.915a.5.5 0 0 1 0-.707zM2 10a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H2.5A.5.5 0 0 1 2 10zm9.5 0a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H12a.5.5 0 0 1-.5-.5zm.754-4.246a.389.389 0 0 0-.527-.02L7.547 9.31a.91.91 0 1 0 1.302 1.258l3.434-4.297a.389.389 0 0 0-.029-.518z"/>
-    	<path fill-rule="evenodd" d="M0 10a8 8 0 1 1 15.547 2.661c-.442 1.253-1.845 1.602-2.932 1.25C11.309 13.488 9.475 13 8 13c-1.474 0-3.31.488-4.615.911-1.087.352-2.49.003-2.932-1.25A7.988 7.988 0 0 1 0 10zm8-7a7 7 0 0 0-6.603 9.329c.203.575.923.876 1.68.63C4.397 12.533 6.358 12 8 12s3.604.532 4.923.96c.757.245 1.477-.056 1.68-.631A7 7 0 0 0 8 3z"/>
-  	</symbol>
-	<symbol id="files" viewBox="0 0 16 16">
-    	<path d="M13 0H6a2 2 0 0 0-2 2 2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2 2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm0 13V4a2 2 0 0 0-2-2H5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1zM3 4a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4z"/>
-  	</symbol>
 </svg>
 	<!--
 		<%= body %>
+		<%= uuid %>
 	-->
 	<header class="p-3 bg-dark text-white">
 		<div class="container">
@@ -103,34 +113,45 @@
 					<svg class="bi me-2" width="30" height="24"><use xlink:href="#people-circle"/></svg>
 					<span class="fs-5 fw-semibold">User List</span>
 				</a>
-				<div id="panel_idPeers" class="list-group list-group-flush border-bottom scrollarea">
-					<!--
-					<a href="#" class="list-group-item list-group-item-action active py-3 lh-tight" aria-current="true">
-						<div class="d-flex w-100 align-items-center">
-							<span class='color-picker' style='display:inline-block;width:20px;height:20px;background-color:#fff;border:1px solid #000;margin-right:7px;'>&nbsp;</span>
-							<strong class="mb-1">List group item heading</strong>
-						</div>					
-					</a>
-					<a href="#" class="list-group-item list-group-item-action py-3 lh-tight">
-						<div class="d-flex w-100 align-items-center">
-							<span class='color-picker' style='display:inline-block;width:20px;height:20px;background-color:#fff;border:1px solid #000;margin-right:7px;'>&nbsp;</span>
-							<strong class="mb-1">List group item heading</strong>
-						</div>					
-					</a>
-					-->
+				<div id="panel_idPeers" class="list-group list-group-flush border-bottom scrollarea" style="height:438px;"></div>
+				<div class="b-divider-w"></div>
+				<a href="#" class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
+					<svg class="bi" width="20" height="20"><use xlink:href="#film"/></svg>
+					<span class="fs-5 fw-semibold">&nbsp;Video Live</span>
+				</a>
+				<div class="list-group list-group-flush">
+					<div id="panel_video" class="video-self"></div>
+				</div>
+				<div class="list-group list-group-flush">
+					<form class="form-control-card p-2">
+						<div class="input-group">
+							<button id="btnVideoOn" class="btn btn-sm" style="width:33%;"> ON </button>
+							<button id="btnVideoOff" class="btn btn-sm" style="width:33%;"> OFF </button>
+							<button id="btnVideoJoin" class="btn btn-sm" style="width:33%;"> JOIN </button>
+						</div>
+					</form>
 				</div>
 			</div>
 			<div class="b-divider-h"></div>
 			<div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white" style="width: 600px;">
-				<a href="#" class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
-					<svg class="bi me-2" width="30" height="30"><use xlink:href="#speedometer2"/></svg>
-					<span class="fs-5 fw-semibold">Canvers</span>
-				</a>
-				<div class="list-group list-group-flush border-bottom">
-					<div id="panel_UserPoints" style="width:0px;height:0px;"></div>
-					<canvas id="panel_PointCanvers" width="550" height="400" style="background:#fefefe; border:1px solid #acadaf;">
-						<p> 브라우저에서  캔버스 지원이 안됩니다.<br> 파이어폭스 , 크롬등을 이용해서 보세요.</p>
-					</canvas>
+				<div id="panel_CanversGroup" style="display:block;">
+					<a href="#" class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
+						<svg class="bi me-2" width="30" height="30"><use xlink:href="#speedometer2"/></svg>
+						<span class="fs-5 fw-semibold">Canvers</span>
+					</a>
+					<div class="list-group list-group-flush border-bottom">
+						<div id="panel_UserPoints" style="width:0px;height:0px;"></div>
+						<canvas id="panel_PointCanvers" width="550" height="400" style="background:#fefefe; border:1px solid #acadaf;">
+							<p> 브라우저에서  캔버스 지원이 안됩니다.<br> 파이어폭스 , 크롬등을 이용해서 보세요.</p>
+						</canvas>
+					</div>
+				</div>
+				<div id="panel_VideosGroup" style="display:none;">
+					<a href="#" class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
+						<svg class="bi me-2" width="30" height="30"><use xlink:href="#film"/></svg>
+						<span class="fs-5 fw-semibold">&nbsp;User Videos</span>
+					</a>
+					<div class="video-grid list-group list-group-flush border-bottom"></div>
 				</div>
 				<div class="b-divider-w"></div>
 				<a href="#" class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
@@ -169,24 +190,7 @@
 					<svg class="bi me-2" width="30" height="30"><use xlink:href="#grid"/></svg>
 					<span class="fs-5 fw-semibold">Message</span>
 				</a>
-				<div id="panel_ChatMsg" class="list-group list-group-flush border-bottom scrollarea">
-					<!--
-					<a href="#" class="list-group-item list-group-item-action active py-3 lh-tight" aria-current="true">
-						<div class="d-flex w-100 align-items-center justify-content-between">
-							<strong class="mb-1">List group item heading</strong>
-							<small>Wed</small>
-						</div>
-						<div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.</div>
-					</a>
-					<a href="#" class="list-group-item list-group-item-action py-3 lh-tight">
-						<div class="d-flex w-100 align-items-center justify-content-between">
-							<strong class="mb-1">List group item heading</strong>
-							<small class="text-muted">Tues</small>
-						</div>
-						<div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.</div>
-					</a>
-					-->
-				</div>
+				<div id="panel_ChatMsg" class="list-group list-group-flush border-bottom scrollarea"></div>
 			</div>
 		</main>
 	</div>
@@ -224,28 +228,35 @@
 		</div>
 	</div>
 <script>
-    var objChat = null;
-    $(function(){
-        objChat = new socialChat(
-              window
-            , $("#panel_ChatMsg")	// panelChatMsg
-            , $("#panel_LogMsg")	// panelLogMsg
-            , $("#panel_idPeers")	// panelUserName
-            , $("#panel_PointCanvers")
-            , $("#panel_UserPenColor")
-            , $("#panel_UserPoints")
-            , $("#panel_template")
-            , $("#txtUserName")		// txtUserName
-            , $("#txtChatMsg")		// txtChatMsg
-            , $("#txtSelectUser")	// txtSelectUser
-            , $("#btnChatSend")		// btnSend
-            , $("#btnSecretChat")	// btnSelect
-            , $("#btnConnect")		// btnConnect
-            , $("#btnDisconnect")	// btnDisconnect
-            , $("#btnChangeColor")	// btnChangeColor
-            , $("#btnCanversClear")	// btnCanversClear
+	const CHAT_UUID = '<%= uuid %>';
+	$(document).ready(function() {
+		$('form').on('submit', () => {return false;});
+		
+        const oChat = new socialChat(window
+			, $("#panel_ChatMsg")	// panelChatMsg
+			, $("#panel_LogMsg")	// panelLogMsg
+			, $("#panel_idPeers")	// panelUserName
+			, $("#panel_CanversGroup")
+			, $("#panel_VideosGroup")
+			, $("#panel_PointCanvers")
+			, $("#panel_UserPenColor")
+			, $("#panel_UserPoints")
+			, $("#panel_template")
+			, $("#panel_video")		// panelVideo
+			, $("#txtUserName")		// txtUserName
+			, $("#txtChatMsg")		// txtChatMsg
+			, $("#txtSelectUser")	// txtSelectUser
+			, $("#btnChatSend")		// btnSend
+			, $("#btnSecretChat")	// btnSelect
+			, $("#btnConnect")		// btnConnect
+			, $("#btnDisconnect")	// btnDisconnect
+			, $("#btnChangeColor")	// btnChangeColor
+			, $("#btnCanversClear")	// btnCanversClear
+			, $("#btnVideoJoin")	// btnVideoJoin
+			, $("#btnVideoOn")	// btnVideoStart
+			, $("#btnVideoOff")		// btnVideoEnd
         );
-    });
+	});
 </script>
 </body>
 </html>
