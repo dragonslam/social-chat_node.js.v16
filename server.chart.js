@@ -43,7 +43,7 @@ app.use(cookieParser());		// parse cookie
 app.use(httpLogger);			// express default logger
 app.use(errorHandler);			// express error handler
 app.use('/public/css', express.static(__dirname + '/public/css'));
-app.use('/public/js', express.static(__dirname + '/public/js'));
+app.use('/public/js' , express.static(__dirname + '/public/js'));
 app.use('/public/js' , express.static(__dirname + '/node_modules/jquery/dist')); // redirect JS jQuery
 app.use('/public/js' , express.static(__dirname + '/node_modules/popper.js/dist'));
 app.use('/public/css', express.static(__dirname + '/node_modules/bootstrap/dist/css')); // redirect CSS bootstrap
@@ -109,7 +109,7 @@ const io = new Server(httpServer, {
 	origins: '*:*',
 	transports: ['polling']
 });
-io.sockets.on("error", e => console.log(e));
+io.sockets.on('error', e => console.log(e));
 
 /* *********************************************************************************
 ** Initialize Chartting Server.
