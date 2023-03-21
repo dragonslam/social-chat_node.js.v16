@@ -5,8 +5,15 @@
  * by dragonslam, 2022-04-20
  */
 
+console.log('## ################################################################################ ##');
+console.log('## Start Server.');
+
+// config root setting.
+process.env["NODE_CONFIG_DIR"] = __dirname + '/.config/';
+
 // import express..
-const express		= require('express')
+const config 		= require('config')
+	, express		= require('express')
 	, bodyParser	= require('body-parser')
 	, cookieParser	= require('cookie-parser')
 	, mysql			= require('mysql')
@@ -15,8 +22,8 @@ const express		= require('express')
 
 const { v4: uuidV4 }= require('uuid');
 
-//const dbconfig   = require('./.config/config.mysql.js');
-//const connection = mysql.createConnection(dbconfig);
+const dbConfig		= config.get('mySql');
+//const connection = mysql.createConnection(dbConfig);
 
 // import custom module..
 const httpLogger	= require('./modules/http-logger.js')
@@ -26,7 +33,7 @@ const httpLogger	= require('./modules/http-logger.js')
 const app = express();
 
 // Http Server Port..
-const port= 8088;
+const port= config.get('system')?.port || 8088;
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from
@@ -42,15 +49,15 @@ app.use(bodyParser.json());		// parse application/json
 app.use(cookieParser());		// parse cookie
 app.use(httpLogger);			// express default logger
 app.use(errorHandler);			// express error handler
-app.use('/public/css', express.static(__dirname + '/public/css'));
-app.use('/public/js' , express.static(__dirname + '/public/js'));
-app.use('/public/js' , express.static(__dirname + '/node_modules/jquery/dist')); // redirect JS jQuery
-app.use('/public/js' , express.static(__dirname + '/node_modules/popper.js/dist'));
-app.use('/public/css', express.static(__dirname + '/node_modules/bootstrap/dist/css')); // redirect CSS bootstrap
-app.use('/public/js' , express.static(__dirname + '/node_modules/bootstrap/dist/js')); // redirect bootstrap JS
-app.use('/public/css', express.static(__dirname + '/node_modules/bootstrap-colorpicker/dist/css'));
-app.use('/public/js' , express.static(__dirname + '/node_modules/bootstrap-colorpicker/dist/js'));
-app.use('/public/js/socket.io' , express.static(__dirname + '/node_modules/socket.io/client-dist'));
+app.use('/public/css', express.static(__dirname +'/public/css'));
+app.use('/public/js' , express.static(__dirname +'/public/js'));
+app.use('/public/js' , express.static(__dirname +'/node_modules/jquery/dist')); // redirect JS jQuery
+app.use('/public/js' , express.static(__dirname +'/node_modules/popper.js/dist'));
+app.use('/public/css', express.static(__dirname +'/node_modules/bootstrap/dist/css'));// redirect CSS bootstrap
+app.use('/public/js' , express.static(__dirname +'/node_modules/bootstrap/dist/js')); // redirect bootstrap JS
+app.use('/public/css', express.static(__dirname +'/node_modules/bootstrap-colorpicker/dist/css'));
+app.use('/public/js' , express.static(__dirname +'/node_modules/bootstrap-colorpicker/dist/js'));
+app.use('/public/js/socket.io', express.static(__dirname +'/node_modules/socket.io/client-dist'));
 
 // Template Engine setting.
 // Template default directory.{views}
@@ -60,7 +67,7 @@ app.engine('ejs', require('ejs').renderFile);
 
 
 // Http configuration....
-app.set('port', process.env.PORT || port);
+app.set('port', port);
 
 
 /* *********************************************************************************
@@ -73,6 +80,7 @@ app.get('/', (request, response) => {
 });
 
 // Template View 호출.
+// Chat Main : https://dragonslam.run.goorm.site/chart/index
 app.get('/chart/:page/', (request, responses) => {
 	const { page, uuid } = request.params;
 	responses.render(`chart/${page}`, { 
@@ -89,12 +97,9 @@ app.post('/signin', (request, responses) => {
 });
 
 
-
 /* *********************************************************************************
 ** Initialize Http Server.
 ** ****************************************************************************** */
-console.log('## ######################################## ##');
-console.log('## Start Server.');
 const httpServer = http.createServer(app)
 	.listen(app.get('port'), () => {
 		console.log('   >> Http Server Start..  port : '+ port);
@@ -112,12 +117,11 @@ const io = new Server(httpServer, {
 io.sockets.on('error', e => console.log(e));
 
 /* *********************************************************************************
-** Initialize Chartting Server.
-** ****************************************************************************** */
-const chartServer = require('./modules/chat/chat-server.js').createServer(io);
-
-
-/* *********************************************************************************
 ** Initialize Video Chartting Server.
 ** ****************************************************************************** */
 const videoServer = require('./modules/chat/video-server.js').createServer(io);
+
+/* *********************************************************************************
+** Initialize Chartting Server.
+** ****************************************************************************** */
+const chartServer = require('./modules/chat/chat-server.js').createServer(io);

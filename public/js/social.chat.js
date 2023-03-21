@@ -1,14 +1,4 @@
-function socialChat (
-	w,
-	panelChatMsg, panelLogMsg, panelUserName, 
-	panelCanvasGroup, panelVideoGroup, 
-	panelCanvasView, panelPenColor, panelUserPoint, panelTemplate, panelVideo,
-	txtUserName, txtChatMsg, txtSelectUser, 
-	btnSend, btnSelect, btnConnect, btnDisconnect,
-	btnChangeColor, btnCanvasClear,
-	btnVideoJoin, btnVideoOn, btnVideoOff
-	
-) {
+function socialChat (w, elements = {}) {
 	if (!w) {
 		throw new Error("argument exception.");
 	}
@@ -35,28 +25,30 @@ function socialChat (
 	this.room_uuid		= (CHAT_UUID || ('videoChat:'+Date.now()));
 	this.currentVideoRoomId = '';
 
-	this.panel_ChatMsg	= this.getObject(panelChatMsg);
-	this.panel_LogMsg	= this.getObject(panelLogMsg);
-	this.panel_UserName	= this.getObject(panelUserName);
-	this.panel_CanvasGroup = this.getObject(panelCanvasGroup);
-	this.panel_VideoGroup  = this.getObject(panelVideoGroup);
-	this.panel_Canvas	= this.getObject(panelCanvasView);
-	this.panel_PenColor	= this.getObject(panelPenColor);
-	this.panel_UserPoint= this.getObject(panelUserPoint);
-	this.panel_Template	= this.getObject(panelTemplate);
-	this.panel_Video	= this.getObject(panelVideo);
-	this.txt_ChatMsg	= this.getObject(txtChatMsg);
-	this.txt_UserName	= this.getObject(txtUserName);
-	this.txt_SelectUser	= this.getObject(txtSelectUser);
-	this.btn_Send		= this.getObject(btnSend);
-	this.btn_Select		= this.getObject(btnSelect);
-	this.btn_Connect	= this.getObject(btnConnect);
-	this.btn_Disconnect	= this.getObject(btnDisconnect);
-	this.btn_ChangeColor= this.getObject(btnChangeColor);
-	this.btn_CanvasClear= this.getObject(btnCanvasClear);
-	this.btn_VideoJoin	= this.getObject(btnVideoJoin);
-	this.btn_VideoOn	= this.getObject(btnVideoOn);
-	this.btn_VideoOff	= this.getObject(btnVideoOff);
+	this.panel_ChatMsg		= this.getObject(elements['panelChatMsg']||'');
+	this.panel_LogMsg		= this.getObject(elements['panelLogMsg']||'');
+	this.panel_UserName		= this.getObject(elements['panelUserName']||'');
+	this.panel_CanvasGroup	= this.getObject(elements['panelCanvasGroup']||'');
+	this.panel_VideoGroup	= this.getObject(elements['panelVideoGroup']||'');
+	this.panel_Canvas		= this.getObject(elements['panelCanvasView']||'');
+	this.panel_PenColor		= this.getObject(elements['panelPenColor']||'');
+	this.panel_UserPoint	= this.getObject(elements['panelUserPoint']||'');
+	this.panel_Template		= this.getObject(elements['panelTemplate']||'');
+	this.panel_Video		= this.getObject(elements['panelVideo']||'');
+	this.txt_ChatMsg		= this.getObject(elements['txtChatMsg']||'');
+	this.txt_UserName		= this.getObject(elements['txtUserName']||'');
+	this.txt_SelectUser		= this.getObject(elements['txtSelectUser']||'');
+	this.txt_AiChatName		= this.getObject(elements['txtAiChatName']||'');
+	this.btn_Connect		= this.getObject(elements['btnConnect']||'');
+	this.btn_ConnectAi		= this.getObject(elements['btnConnectAi']||'');
+	this.btn_Disconnect		= this.getObject(elements['btnDisconnect']||'');
+	this.btn_Send			= this.getObject(elements['btnSend']||'');
+	this.btn_Select			= this.getObject(elements['btnSelect']||'');
+	this.btn_ChangeColor	= this.getObject(elements['btnChangeColor']||'');
+	this.btn_CanvasClear	= this.getObject(elements['btnCanvasClear']||'');
+	this.btn_VideoJoin		= this.getObject(elements['btnVideoJoin']||'');
+	this.btn_VideoOn		= this.getObject(elements['btnVideoOn']||'');
+	this.btn_VideoOff		= this.getObject(elements['btnVideoOff']||'');
 	
 	this.logging("SocialChat] initialize start.");
 	this.initializeUI();
@@ -167,8 +159,10 @@ socialChat.prototype = {
 	 * 
 	 */
 	initializeUI : function() {
-		this.showObject(this.btn_Connect, true);
+		this.showObject(this.btn_Connect, true);		
 		this.showObject(this.btn_Disconnect, false);
+		this.showObject(this.btn_ConnectAi, false);
+		this.showObject(this.txt_AiChatName, false);
 		
 		this.showObject(this.panel_CanvasGroup, true);
 		this.showObject(this.panel_VideoGroup, false);
@@ -187,6 +181,9 @@ socialChat.prototype = {
 	
 		THIS.btn_Connect.click(function(e) {
 			THIS.connectServer();
+		});
+		THIS.btn_ConnectAi.click(function(e) {
+			THIS.connectAiChat();
 		});
 		THIS.btn_Disconnect.click(function(e) {	
 			THIS.disconnectServer();
@@ -208,16 +205,16 @@ socialChat.prototype = {
 			}
 		});
 		THIS.btn_Select.click(function(e) {	
-			var selectUser	= '';
-			var targrtUser	= '';
+			var selectUser		= '';
+			var selectMessage	= '';
 	
 			if (THIS.txt_SelectUser) 
 				selectUser = THIS.txt_SelectUser.val();
 			
-			if (THIS.txt_UserName) {
-				targrtUser = THIS.txt_UserName.val();
+			if (THIS.txt_ChatMsg && THIS.txt_ChatMsg.val() != '') {
+				selectMessage = THIS.txt_ChatMsg.val();
 			}
-			THIS.send('secret_chat', selectUser, targrtUser);
+			THIS.send('secret_chat', selectUser, selectMessage);
 		});
 		THIS.logging("SocialChat] initializeEvent complete.");
 	},
@@ -475,7 +472,7 @@ socialChat.prototype = {
 	 * connect chat server.
 	 * use by node.js, socket.io
 	 */
-	connectServer : function() {
+	connectServer : function(options = {}) {
 		var THIS = this;
 		
 		if (String(THIS.txt_UserName.val()).trim() == "") {
@@ -509,11 +506,11 @@ socialChat.prototype = {
 			THIS.showObject(THIS.btn_Disconnect, false);
 			THIS.showObject(THIS.btn_Connect, true);
 			
-			THIS.socket.removeAllListeners();			
+			THIS.socket.removeAllListeners();
 			THIS.socket.disconnect();
 		});
 		
-		THIS.socket.on('update_users', function (data) {					
+		THIS.socket.on('update_users', function (data) {
 			//THIS.logging("update_users - " + data.users[data.users.length-1].name);
 			//console.log("update_users", data);	
 			for(var i=data.users.length-1; i>=0; i--){ 
@@ -600,6 +597,8 @@ socialChat.prototype = {
 	
 		THIS.showObject(THIS.btn_Connect, false);
 		THIS.showObject(THIS.btn_Disconnect, true);
+		THIS.showObject(THIS.btn_ConnectAi, true);
+		THIS.showObject(THIS.txt_AiChatName, true);
 		
 		// 사용자가 Canva를 사용할 수 있도록 설정함.
 		THIS.initializeCanvers();
@@ -611,12 +610,24 @@ socialChat.prototype = {
 		this.appendMsg( "disconnected server.", true);	
 		this.showObject(this.btn_Disconnect, false);
 		this.showObject(this.btn_Connect, true);
+		this.showObject(this.btn_ConnectAi, false);
+		this.showObject(this.txt_AiChatName, false);
 		this.btn_VideoJoin.removeClass('btn-info').addClass('btn-secondary');
 		this.btn_VideoOn.removeClass('btn-primary').addClass('btn-secondary');
 		this.btn_VideoOff.removeClass('btn-danger').addClass('btn-secondary');
 	
 		if (this.socket)
 			this.socket.disconnect();
+	},
+	
+	connectAiChat : function() {
+		if (this.isCon && this.socket) {
+			this.socket.emit("ai_create", this.txt_AiChatName.val() );	
+			this.appendMsg( "crated Ai Chat.", true);	
+			//this.txt_AiChatName.attr("readonly", true);
+			//this.txt_AiChatName.css({'backgroundColor': '#333'});
+			this.txt_AiChatName.val('');
+		}
 	},
 	
 	isConnect : function() {

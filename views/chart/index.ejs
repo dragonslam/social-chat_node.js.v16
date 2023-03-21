@@ -67,8 +67,10 @@
 					</form>
 					<form class="form-control-card p-2">
 						<div class="input-group">
+							<input  id="txtAiChatName" type="text" class="form-control" placeholder="Ai Name" style="display:none;"/>
+							<button id="btnCreateAi" type="button" class="btn btn-warning" style="width:120px;display:none;">Create AI</button>
 							<input  id="txtSelectUser" type="text" class="form-control" placeholder="User Name" />
-							<button id="btnSecretChat" type="button" class="btn btn-primary" style="width:120px;">SecretChat</button>
+							<button id="btnSecretChat" type="button" class="btn btn-primary" style="width:120px;">Secret Chat</button>
 						</div>
 					</form>
 					<form class="form-control-card p-2">
@@ -78,7 +80,7 @@
 							<button id="btnCanversClear" class="btn btn-danger btn-sm" style="width:25%;"> Clear </button>
 							<div class="form-control" style="width:25%;"></div>
 						</div>
-					</form>				
+					</form>
 					<div class="bs-component">
 						<div id="panel_LogMsg" style="position:relative;background:#eeeeee;height:125px;overflow-x:hidden;overflow-y:scroll;padding:5px;"></div>
 					</div>
@@ -135,30 +137,35 @@
 	$(document).ready(function() {
 		$('form').on('submit', () => {return false;});
 		
-        const oChat = new socialChat(window
-			, $("#panel_ChatMsg")		// panelChatMsg
-			, $("#panel_LogMsg")		// panelLogMsg
-			, $("#panel_idPeers")		// panelPeers
-			, $("#panel_CanversGroup")	// panelCanversGroup
-			, $("#panel_VideosGroup")	// panelVideosGroup
-			, $("#panel_PointCanvers")	// panelPointCanvers
-			, $("#panel_UserPenColor")	// panelUserPenColor
-			, $("#panel_UserPoints")	// panelUserPoints
-			, $("#panel_template")		// panelTemplate
-			, $("#panel_video")			// panelVideo
-			, $("#txtUserName")			// txtUserName
-			, $("#txtChatMsg")			// txtChatMsg
-			, $("#txtSelectUser")		// txtSelectUser
-			, $("#btnChatSend")		// btnSend
-			, $("#btnSecretChat")	// btnSelect
-			, $("#btnConnect")		// btnConnect
-			, $("#btnDisconnect")	// btnDisconnect
-			, $("#btnChangeColor")	// btnChangeColor
-			, $("#btnCanversClear")	// btnCanversClear
-			, $("#btnVideoJoin")	// btnVideoJoin
-			, $("#btnVideoOn")		// btnVideoStart
-			, $("#btnVideoOff")		// btnVideoEnd
+        const oChat = new socialChat(window, {
+				  panelChatMsg		: $("#panel_ChatMsg")
+				, panelLogMsg		: $("#panel_LogMsg")
+				, panelUserName		: $("#panel_idPeers")
+				, panelCanvasGroup	: $("#panel_CanversGroup")
+				, panelVideoGroup	: $("#panel_VideosGroup")
+				, panelCanvasView	: $("#panel_PointCanvers")
+				, panelPenColor		: $("#panel_UserPenColor")
+				, panelUserPoint	: $("#panel_UserPoints")
+				, panelTemplate		: $("#panel_template")
+				, panelVideo		: $("#panel_video")
+				, txtUserName		: $("#txtUserName")
+				, txtChatMsg		: $("#txtChatMsg")
+				, txtSelectUser		: $("#txtSelectUser")
+				, txtAiChatName		: $("#txtAiChatName")
+				, btnConnect		: $("#btnConnect")
+				, btnConnectAi		: $("#btnCreateAi")			
+				, btnDisconnect		: $("#btnDisconnect")
+				, btnSend			: $("#btnChatSend")
+				, btnSelect			: $("#btnSecretChat")
+				, btnChangeColor	: $("#btnChangeColor")
+				, btnCanvasClear	: $("#btnCanversClear")
+				, btnVideoJoin		: $("#btnVideoJoin")
+				, btnVideoOn		: $("#btnVideoOn")
+				, btnVideoOff		: $("#btnVideoOff")
+			}
         );
+		
+
 	});
 </script>
 <%-include('../_inc/chat.footer.ejs') %>

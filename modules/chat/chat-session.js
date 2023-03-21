@@ -10,6 +10,11 @@ class SocialChartSession {
 		this.room_id= "";
 		this.peer_id= "";
 		this.isHost = false;
+		
+		// AI Chat options.
+		this.ai_user= false;
+		this.ai_chat= undefined;
+		this.ai_temp= undefined;
 	}
 }
 
