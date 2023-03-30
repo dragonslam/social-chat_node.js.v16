@@ -1,5 +1,5 @@
 console.log('## ################################################################################ ##');
-console.log('## Node HTTP Server for express start server.');
+console.log('## Start UP-Bit 자동 거래 시스템 Server.');
 
 // config root setting.
 process.env["NODE_CONFIG_DIR"] = __dirname + '/.config/';
@@ -9,10 +9,7 @@ const config	= require('config')
 	, path		= require('path');
 
 // express handler.
-const express	= require('./modules/http-handler.js').create({server:'chart'});
-
-const dbConfig	= config.get('mySql');
-//const connection = mysql.createConnection(dbConfig);
+const express	= require('./modules/http-handler.js').create({server:'upbit'});
 
 /* *********************************************************************************
 ** Initialize Http Server.
@@ -26,7 +23,6 @@ const httpServer = http.createServer(express)
 ** Initialize Socket-io.
 ** ****************************************************************************** */
 const { Server } = require('socket.io');
-//const io = new Server(httpServer);
 const io = new Server(httpServer, {
 	origins: '*:*',
 	transports: ['polling']
@@ -34,12 +30,7 @@ const io = new Server(httpServer, {
 io.sockets.on('error', e => console.log(e));
 
 /* *********************************************************************************
-** Initialize Video Chartting Server.
+** Initialize UP-BIT Automated Trading System.
 ** ****************************************************************************** */
-const videoServer = require('./modules/chat/video-server.js').createServer(io);
-
-/* *********************************************************************************
-** Initialize Chartting Server.
-** ****************************************************************************** */
-const chartServer = require('./modules/chat/chat-server.js').createServer(io);
+const upbitServer = require('./modules/upbit/upbit-server.js').createServer(io);
 

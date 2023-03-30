@@ -21,7 +21,7 @@
 > npm install readline
 > npm install openai
 > npm install node-telegram-bot-api
-> npm install moving-average technicalindicators ta-lib
+> npm install moving-average technicalindicators
 ```
 
 ## nodeJs start
@@ -38,4 +38,5 @@
 - https://www.npmjs.com/package/technicalindicators
 - https://www.npmjs.com/package/moving-average
 - https://www.npmjs.com/package/ta-lib
+- https://www.npmjs.com/package/openai
 

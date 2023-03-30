@@ -1,3 +1,8 @@
+<%# 
+
+	- Node.JS를 활용한 UP-Bit 자동 거래 시스템
+		
+%>
 <!DOCTYPE html>
 <html lang="en" class=" is-copy-enabled is-u2f-enabled">
 <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# object: http://ogp.me/ns/object# article: http://ogp.me/ns/article# profile: http://ogp.me/ns/profile#">
@@ -7,7 +12,7 @@
 	<meta name="referrer" content="origin-when-cross-origin" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.5">
 
-	<title>Node.js.v16 - Social Chat.!!</title>
+	<title>Automated Strategy Trading System</title>
 
 	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -30,8 +35,47 @@
 	<script defer src="/public/js/bootstrap-colorpicker.min.js"></script>
 	<script defer src="/public/js/socket.io.js"></script>
 	<script defer src="/public/js/common.js"></script>
-	<script defer src="/public/js/social.chat.js"></script>
-	<script defer src="/public/js/canvers.GraphicPen.js"></script>
-	<script defer src="/public/js/canvers.DrawingBoard.js"></script>
+	<script defer src="/public/js/upbit.js"></script>
 </head>
 <body>
+    <div class="container mt-5">
+        <h1>Automated Trading System</h1>
+        <div id="login-form" class="my-4">
+			<form id="loginForm" onsubmit="return false;">
+				<h4>LOGIN</h4>
+				<div class="form-group">
+					<label for="member_id">회원 ID</label>
+					<input type="text" class="form-control" id="member_id" required>
+				</div>
+				<div class="form-group">
+					<label for="member_pwd">비밀번호</label>
+					<input type="password" class="form-control" id="member_pwd" required>
+				</div>
+				<button type="button" class="btn btn-primary" id="login-btn">로그인</button>
+			</form>
+        </div>
+        <div id="main-form" class="d-none">
+            <h4>잔액</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>화폐</th>
+                        <th>수량</th>
+                    </tr>
+                </thead>
+                <tbody id="balance-body">
+                </tbody>
+            </table>
+            <h4 class="mt-5">거래 가능한 화폐</h4>
+            <div class="form-group">
+                <label for="coin-select">화폐 선택</label>
+                <select class="form-control" id="coin-select">
+                </select>
+            </div>
+            <button type="button" class="btn btn-primary" id="start-btn">자동 거래 시작</button>
+            <h4 class="mt-5">거래 로그</h4>
+            <ul id="log-list" class="list-group">
+            </ul>
+        </div>
+    </div>
+<%-include('../_inc/chat.footer.ejs') %>
