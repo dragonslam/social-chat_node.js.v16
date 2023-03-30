@@ -1,5 +1,6 @@
 // chart server module.
 
+const config  = require('config');
 const Session = require('./chat-session.js');
 const Manager = require('./chat-session-manager.js');
 const OpenAi  = require('../openAi/ai-chat-server.js');
@@ -8,10 +9,15 @@ const Telegram= require('../telegram/telegram-bot.js');
 let chatServer= null;
 class SocialChartServer {
 	constructor(io) {
-		this.io = io;
+		this.env 	= config.get('system');
+		this.io 	= io;
 		this.sockets= io.sockets;
 		this.manager= Manager.create();
-		this.bot	= Telegram.create();
+		this.bot	= Telegram.create({
+			onConnectCallback: this.onTelegramConnect,
+			onCloseCallback	 : this.onTelegramClose,
+			onReceivCallback : this.onTelegramMessageReceiver
+		});
 		
 		this.counts = 0;
 		this.current= 0;
@@ -26,8 +32,8 @@ class SocialChartServer {
 		
 		This.sockets.on('connect', function(currentSocket) {
 			const session = Session.connect('New Member');
-			This.logging('dbug', 'New User Connected. ('+ session.id +')');
-			
+			This.logging('infor', 'New User Connected. ('+ session.id +')');
+
 			currentSocket.on('connect_user', function ( name ) {				
 				This.connectUser(currentSocket, session, name);
 			});
@@ -62,7 +68,7 @@ class SocialChartServer {
 			});
 		});
 		
-		this.logging('info', 'initalize complete.');
+		this.logging('infor', 'initalize complete.');
 	}
 	
 	connectUser(currentSocket, session, name) {
@@ -76,7 +82,7 @@ class SocialChartServer {
 			this.manager.add( session );
 
 			this.bot.send(`[connectUser] ${name}`);
-			this.logging('dbug', '[connectUser] '+ session.id +':'+ name);
+			this.logging('debug', '[connectUser] '+ session.id +':'+ name);
 			this.syncUsers();
 		} 
 		else {
@@ -89,7 +95,7 @@ class SocialChartServer {
 	
 	sendMessage(currentSocket, session, msg) {
 		session.count++;
-		this.logging('dbug', '[sendMessage]['+ session.count +'] '+ session.id );
+		this.logging('debug', '[sendMessage]['+ session.count +'] '+ session.id );
 		this.sockets.emit('update_chat', {user : session, message : msg});
 		this.bot.send(`[${session.name}] ${msg}`);
 		this.syncUsers();
@@ -103,13 +109,13 @@ class SocialChartServer {
 			if (targetSession.ai_user && targetSession.ai_chat) {
 				// OpenAi ChatGPT에 질의하여 답변을 전파한다.
 				targetSession.ai_chat.answer(msg).then(function(responseMsg) {
-					This.logging('dbug', '[AiCALL] : '+ targetSession.name +'=>'+ responseMsg);
+					This.logging('debug', '[AiCALL] : '+ targetSession.name +'=>'+ responseMsg);
 					This.sockets.emit('update_chat', {user : targetSession, message : responseMsg});
 				});
 			}
 			else {
 				var targetSocket = This.sockets.sockets[targetSession.id];
-				This.logging('dbug', '[secret] : '+ session.name +'=>'+ user);
+				This.logging('debug', '[secret] : '+ session.name +'=>'+ user);
 
 				currentSocket.emit('update_chat', session.name +':'+ msg );
 				targetSocket.emit( 'update_chat', session.name +':'+ msg );	
@@ -119,7 +125,7 @@ class SocialChartServer {
 	
 	// Synchroniz User status
 	syncStatus(currentSocket, session, data) {
-		this.logging('dbug', '[syncStatus] '+ data.name +'/'+ data.color );			
+		this.logging('debug', '[syncStatus] '+ data.name +'/'+ data.color );			
 		if (this.manager.find( data.id ) != null ){
 			session.color	= data.color;
 			session.point_x = data.point_x;
@@ -132,7 +138,7 @@ class SocialChartServer {
 	
 	// Synchroniz User color from colorplcker.
 	syncColor(currentSocket, session, data) {
-		this.logging('dbug', '[syncColor] '+ data.name +'/'+ data.color );			
+		this.logging('debug', '[syncColor] '+ data.name +'/'+ data.color );			
 		if (this.manager.find( data.id ) != null ){
 			session.color = data.color;
 			this.syncUsers();
@@ -141,7 +147,7 @@ class SocialChartServer {
 	
 	// Synchroniz Canvas Point
 	syncPoint(currentSocket, session, data) {
-		//this.logging('dbug', '[syncPoint] '+ data.name +'/['+ data.point_x +'/'+ data.point_y +']' );			
+		//this.logging('debug', '[syncPoint] '+ data.name +'/['+ data.point_x +'/'+ data.point_y +']' );			
 		if (this.manager.find( data.id ) != null ){
 			session.point_x = data.point_x;
 			session.point_y = data.point_y;
@@ -151,7 +157,7 @@ class SocialChartServer {
 	
 	// drow start 
 	drowStart(currentSocket, session, data) {
-		this.logging('dbug', '[drowStart] '+ data.name +'/['+ data.point_x +'/'+ data.point_y +']' );
+		this.logging('debug', '[drowStart] '+ data.name +'/['+ data.point_x +'/'+ data.point_y +']' );
 		if (this.manager.find( data.id ) != null ){
 			session.point_x = data.point_x;
 			session.point_y = data.point_y;
@@ -161,7 +167,7 @@ class SocialChartServer {
 	
 	// drow line
 	drowLine(currentSocket, session, data) {
-		//this.logging('dbug', '[drowLine] '+ data.name +'/['+ data.point_x +'/'+ data.point_y +']' );		
+		//this.logging('debug', '[drowLine] '+ data.name +'/['+ data.point_x +'/'+ data.point_y +']' );		
 		if (this.manager.find( data.id ) != null ){
 			session.point_x = data.point_x;
 			session.point_y = data.point_y;
@@ -170,7 +176,7 @@ class SocialChartServer {
 	}
 	
 	disconnect(currentSocket, session) {
-		this.logging('dbug', '[discontUser] '+ session.id );
+		this.logging('debug', '[discontUser] '+ session.id );
 		if (this.manager.find( session.id ) != null ){	
 			this.sockets.emit('update_chat' , session.name +' is out.' );
 			this.sockets.emit('disconnect_user', session );
@@ -178,22 +184,47 @@ class SocialChartServer {
 			this.current--;
 			this.syncUsers();
 		}
-	}	
+	}
+	onTelegramConnect(message) {
+		if (!this.sockets) return false;
+		this.bot.send(`# Node HTTP Server for express start server.`);
+		this.bot.send(`# Server connect to ${this.env.protocol}://${this.env.host}:${this.env.port}/${this.env.rootPath}`);
+		
+		let userInfo = {id: 'Telegram', name: 'Telegram'};
+		this.sockets.emit('update_chat', {user: userInfo, message: 'Telegram Connect.'});
+	}
+	onTelegramClose(message) {
+		if (!this.sockets) return false;
+		let userInfo = {id: 'Telegram', name: 'Telegram'};
+		this.sockets.emit('update_chat', {user: userInfo, message: 'Telegram Close.'});
+	}
+	onTelegramMessageReceiver(telegramMessage = {}) {
+		if (!this.sockets) return false;
+		if (!telegramMessage?.text) return false;
+
+		const userInfo = Object.assign(telegramMessage, {
+			id	:`telegramId_${telegramMessage.from.id}`, 
+			name:`telegramName_${telegramMessage.from.username}`, 
+		});
+		this.logging('debug', '[onTelegramMessageReceiver] '+ telegramMessage.text);
+		this.sockets.emit('update_chat', {user: userInfo, message: telegramMessage.text});
+	}
 	
 	connectAi(currentSocket, session, name) {
 		if (this.manager.findByName( name ) == null ) {			
 			this.counts++;
 			this.current++;
 			
-			session.id	 	= currentSocket.id;
-			session.name 	= name;
-			session.color	= this.colors[this.counts % this.colors.length];
-			session.ai_user	= true;
-			session.ai_temp	= ((Math.floor(Math.random() * 10) + 1) / 10);
-			session.ai_chat	= OpenAi.createServer({temperature : session.ai_temp});
-			this.manager.add( session );
+			const aiSession = Session.connect('AI Member');
+			aiSession.id	 	= session.id +'#_ai'+ this.counts;
+			aiSession.name 		= name;
+			aiSession.color		= this.colors[this.counts % this.colors.length];
+			aiSession.ai_user	= true;
+			aiSession.ai_temp	= ((Math.floor(Math.random() * 10) + 1) / 10);
+			aiSession.ai_chat	= OpenAi.createServer({temperature : aiSession.id});
+			this.manager.add( aiSession );
 
-			this.logging('dbug', '[connectAi] '+ session.id +':'+ name +':'+ session.ai_temp);
+			this.logging('debug', '[connectAi] '+ aiSession.id +':'+ aiSession.name +':'+ aiSession.ai_temp);
 			this.syncUsers();
 		} 
 		else {
@@ -202,8 +233,13 @@ class SocialChartServer {
 	}
 	
 	// Logging
-	logging(title, msg) {
-		console.log (`   >> ChartServer[${title}] ${msg}`);
+	error(err) {
+		this.logging('error', err);
+	}
+	logging(title) {
+		let logs = Array.from(arguments);
+		 logs[0] = `   >> [${new Date().toLocaleString()}] ChartServer[${title}]`;
+		console.log.apply(true, logs);
 	}
 }
 

@@ -352,14 +352,18 @@ class UpBitApiServer {
 	send(...args) {
 		this.socket?.emit?.apply(this.socket, args);
 	}
-	logging(title, msg, isSend = false) {
-		console.log (`   >> [${new Date().toLocaleString()}] UpBitApiServer[${title}] ${msg}`);
-		if (isSend === true) {
-			this.send('log', msg);
-		}
-	}
 	error(err) {
-		console.log (`   >> [${new Date().toLocaleString()}] UpBitApiServer.Error : `, err);
+		this.logging('error', err);
+	}
+	logging(level, msg, isSend = false) {
+		if (typeof msg !== 'string') {
+			console.log (`   >> [${new Date().toLocaleString()}] UpBitApiServer[${level}]`, msg);
+		} else {
+			console.log (`   >> [${new Date().toLocaleString()}] UpBitApiServer[${level}] ${msg}`);
+			if (isSend === true) {
+				this.send('log', msg);
+			}
+		}
 	}
 
 	// HTTPS Request 통신.

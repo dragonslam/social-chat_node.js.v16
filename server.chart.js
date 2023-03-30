@@ -1,5 +1,5 @@
 console.log('## ################################################################################ ##');
-console.log('## Node HTTP Server for express start server.');
+console.log('## Node HTTP Server for express server start.');
 
 // config root setting.
 process.env["NODE_CONFIG_DIR"] = __dirname + '/.config/';
@@ -19,7 +19,7 @@ const dbConfig	= config.get('mySql');
 ** ****************************************************************************** */
 const httpServer = http.createServer(express)
 	.listen(express.get('port'), () => {
-		console.log('   >> Http Server Start..  port : '+ express.get('port'));
+		console.log(`   >> [${new Date().toLocaleString()}] Http Server Start..  port=>${express.get('port')}`);
 	});
 
 /* *********************************************************************************

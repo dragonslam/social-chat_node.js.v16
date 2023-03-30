@@ -15,10 +15,10 @@ class SocialVideoChartServer {
 		// use PeerJs Library.
 		// https://github.com/emyduke/webrtc-video-chart--Nodejs
 		This.io.on('connect', function(socket) {
-			This.logging('dbug', 'New connection.');
+			This.logging('debug', 'New connection.');
 			
 			socket.on('join-room', (roomId, userId) => {
-				This.logging('dbug', `join-room(${roomId}, ${userId}) >> broadcast start.!!`);
+				This.logging('debug', `join-room(${roomId}, ${userId}) >> broadcast start.!!`);
 				
 				socket.join(roomId);
 				socket.broadcast.emit('user-connected', userId);
@@ -29,12 +29,17 @@ class SocialVideoChartServer {
 			});
 		});
 		
-		This.logging('info', 'initalize complete.');
+		This.logging('infor', 'initalize complete.');
 	}
 	
 	// Logging
-	logging(title, msg) {
-		console.log (`   >> VideoServer[${title}] ${msg}`);
+	error(err) {
+		this.logging('error', err);
+	}
+	logging(title) {
+		let logs = Array.from(arguments);
+		 logs[0] = `   >> [${new Date().toLocaleString()}] VideoServer[${title}]`;
+		console.log.apply(true, logs);
 	}
 }
 

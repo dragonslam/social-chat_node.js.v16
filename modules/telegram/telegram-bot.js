@@ -1,14 +1,24 @@
 // OpenAiChartServer module.
-const config 		= require('config')
+const config 		= require('config');
 const TelegramBot	= require('node-telegram-bot-api');
 
 class TelegramBotManager {
 	constructor(options = {}) {
 		this.env 		= config.get('telegram');
+		this.keys		= this.env.bot_keys;		
+		this.token		= options['token'] || this.env.api_key;
+		this.chatId		= options['chatId']|| '';
+		this.onConnect	= options['onConnectCallback']||undefined;
+		this.onClose	= options['onCloseCallback']  ||undefined;
+		this.onReceiv	= options['onReceivCallback'] ||undefined;
+		this.botName	= 'TelegramBot';
 		this.bot		= null;
-		this.token		= options['token'] ||this.env.api_key;
-		this.chatId		= options['chatId']||'';
-		this.onReceiv	= options['onReceivCallback']||undefined;
+		this.isInit		= false;
+		this.isConnected= false;
+		if (options['name'] && this.keys[options['name']]) {
+			this.token	= this.keys[options['name']];
+			this.botName= options['name'] + 'TelegramBot';
+		}
 		this.init();
 	}
 	
@@ -16,51 +26,72 @@ class TelegramBotManager {
 	init() {
 		const This = this;
 		if (This.token) {
-			This.bot = new TelegramBot(This.token, { polling: false });	
-			This.logging('info', 'initalize start');
-			This.logging('info', 'token: '+ This.token);
+			This.bot	= new TelegramBot(This.token, { polling: true });	
+			This.isInit	= true;
+			This.logging('infor', 'initalize start. Use token:'+ This.token);			
 
-			This.bot.onText(/\/echo (.+)/, (msg, match) => {   
-				This.chatId = msg.chat.id;
-				This.logging('info', msg);
-				
-				// 식별된 "msg"는 보내온 채팅방('chatId')에게 앵무새처럼 재전송한다 ("꺄악: 'msg'")
-				const message = "onText: "+match[1]; 
-				This.send(message);
-			 });
-			This.bot.on('message', (msg, match)=>{
-				This.chatId = msg.chat.id;
-				This.logging('info', msg);
-
-				// send a message to the chat acknowledging receipt of their message
-				const message = "onMessage: "+match[1]; 
-				This.send(message);
-				if (This.onReceiv && typeof This.onReceiv == 'function') {
-					This.onReceiv(msg);
-				}
+			// Check bot connection status
+			This.bot.on('polling_error', (error) => {
+				This.isInit	= false;
+				This.isConnected = false;
+				This.error?.(error);
+				This.onClose?.(error);
 			});
-			This.logging('info', 'initalize complete.');
+			This.bot.on('webhook_error', (error) => {
+				This.isInit	= false;
+				This.isConnected = false;
+				This.error?.(error);
+				This.onClose?.(error);
+			});
+			This.bot.on('message', (msg)=>{
+				This.logging('infor', 'onMessage()', msg);
+				if (!msg?.chat?.id) return;
+				let message = msg.text;
+				This.chatId = msg.chat.id;
+				This.isInit = true;
+				This.isConnected = true;
+				if (message.indexOf('/echo') > -1) {
+					This.send("야호~: "+ message.replace('/echo',''));	
+				}
+				This.onReceiv?.(msg);
+				This.connect('Telegram onMessage()');
+			});
+			This.logging('infor', 'initalize complete.');
+			This.connect('Telegram initalize complete');
 		} 
 		else {
 			This.logging('error', 'token is null.');
 		}
 	}
-	
-	send(message) {
-		const This = this;
-		if (This.chatId) {
-			This.bot.sendMessage(This.chatId, message)
-				.then(() => This.logging('info', 'message sent'))
-				.catch((error) => This.logging('error', error));	
-		} else {
-			this.logging('error', 'none chatId.');	
+	connect(message) {
+		if (this.isInit && this.chatId && !this.isConnected) {
+			this.isConnected = true;
+			this.onConnect?.(message);
 		}
 	}
-
+	send(message) {
+		const This = this;
+		if (This.isInit && This.chatId) {
+			This.bot.sendMessage(This.chatId, message)
+				.then(() => {
+					This.logging('send', 'Bot is connected and message sent successfully');
+				})
+				.catch((error) => {
+					This.error(error);
+				});
+		} else {
+			This.logging('error', 'none chatId.');	
+		}
+	}
 	
 	// Logging
-	logging(title, msg) {
-		console.log (`   >> TelegramBot[${title}] ${msg}`);
+	error(err) {
+		this.logging('error', err);
+	}
+	logging(title) {
+		let logs = Array.from(arguments);
+		 logs[0] = `   >> [${new Date().toLocaleString()}] ${this.botName}[${title}]`;
+		console.log.apply(true, logs);
 	}
 }
 
