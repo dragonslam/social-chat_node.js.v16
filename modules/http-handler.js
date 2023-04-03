@@ -8,7 +8,9 @@ const config 		= require('config')
 	, bodyParser	= require('body-parser')
 	, cookieParser	= require('cookie-parser')
 	, http			= require('http')
-	, path			= require('path');
+	, path			= require('path')
+	, os 			= require('os')
+	, dns 			= require('dns');
 const { v4: uuidV4 }= require('uuid');
 
 class ExpressHandler {
@@ -27,6 +29,7 @@ class ExpressHandler {
 		this.express	 = express();
 		
 		this.init();
+		this.trace();
 	}
 	
 	// init.
@@ -87,7 +90,7 @@ class ExpressHandler {
 		// Http root.. 
 		app.get('/', (request, response) => {
 			const ip = request.socket.remoteAddress;
-			response.render('index', { body : `Connect Succeress.. <br/><br/><h3>Hello World!!</h3>`});
+			response.render('index', { body : `Connect Succeress..<!--a>${ip}</a--> <br/><br/><h3>Hello World!!</h3>`});
 			//response.send('Connect Succeress.. <br/><br/><h3>Hello World!!</h3>');
 		});
 		// Http post connection..
@@ -119,6 +122,30 @@ class ExpressHandler {
 			});
 		}
 
+	}
+	
+	trace() {
+		const networkInterfaces = os.networkInterfaces();
+		const addresses = [];
+		
+		console.log(`## System Information. OS Type:${os.type()}, Platform:${os.platform()}, Memory:${os.totalmem()}/${os.freemem()}`); 
+		Array.from(os.cpus()).forEach((obj, idx)=>{
+			console.log(`## System Information. > CPU[${idx}] ${obj.model}-${obj.speed}MHZ`);
+		});
+		Object.keys(networkInterfaces).forEach(interfaceName => {
+			const networkInterface = networkInterfaces[interfaceName];
+			networkInterface.forEach(address => {
+				if (!address.internal && address.family === 'IPv4') {
+					addresses.push(interfaceName +':'+ address.address);
+				}
+			});
+		});
+		console.log(`## Network Interface - [${os.hostname()}] Server IP Address :`, addresses); 
+		
+		dns.lookup(os.hostname(), (err, address) => {
+			// 현재 서버의 IP 주소가 출력됩니다.
+			console.log(`## Network Interface - [${os.hostname()}] DNS IP Address :`, address);
+		});
 	}
 }
 
