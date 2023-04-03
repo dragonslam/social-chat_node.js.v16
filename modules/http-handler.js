@@ -86,7 +86,8 @@ class ExpressHandler {
 		
 		// Http root.. 
 		app.get('/', (request, response) => {
-			response.render('index', { body : 'Connect Succeress.. <br/><br/><h3>Hello World!!</h3>'});
+			const ip = request.socket.remoteAddress;
+			response.render('index', { body : `Connect Succeress.. <br/><br/><h3>Hello World!!</h3>`});
 			//response.send('Connect Succeress.. <br/><br/><h3>Hello World!!</h3>');
 		});
 		// Http post connection..
