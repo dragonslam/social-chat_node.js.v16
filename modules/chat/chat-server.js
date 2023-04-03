@@ -221,7 +221,7 @@ class SocialChartServer {
 			aiSession.color		= this.colors[this.counts % this.colors.length];
 			aiSession.ai_user	= true;
 			aiSession.ai_temp	= ((Math.floor(Math.random() * 10) + 1) / 10);
-			aiSession.ai_chat	= OpenAi.createServer({temperature : aiSession.id});
+			aiSession.ai_chat	= OpenAi.createServer({temperature : aiSession.ai_temp});
 			this.manager.add( aiSession );
 
 			this.logging('debug', '[connectAi] '+ aiSession.id +':'+ aiSession.name +':'+ aiSession.ai_temp);
