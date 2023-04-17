@@ -6,9 +6,11 @@ const config 	    = require('config')
 
 const MA = require('moving-average')
 	, TI = require('technicalindicators');
-
+	
+const Telegram	= require('../telegram/telegram-bot.js');
 class UpBitApiServer {
 	constructor(io = {/* socket.io */}) {
+		this.bot 		= null;
 		this.io 		= io;
 		this.socket		= null;
 		this.token		= null;
@@ -28,6 +30,13 @@ class UpBitApiServer {
 		if(!This.endpoint || !This.accessKey || !This.secretKey) throw new Error('Need API Key.');
 		if(!This.adminKey || !This.adminPwd) throw new Error('Need Admin Auth info.');
 		
+		This.bot = Telegram.create({
+			name : 'upbit',
+			onConnectCallback: this.onTelegramConnect,
+			onCloseCallback	 : this.onTelegramClose,
+			onReceivCallback : this.onTelegramMessageReceiver
+		});
+
 		This.initTechnicalIndicator();
 		This.initSocketIO();
 		return This;
@@ -560,6 +569,23 @@ class UpBitApiServer {
 		const data= {};//await this.request(sellOptions);
 		this.logging('SellCoin', `${coin} 판매 주문 완료: 가격=${sellPrice}, 수량=${quantity}`, true);
 		return data;
+	}
+
+
+	onTelegramConnect(message) {
+		if (!this.socket) return false;
+		this.logging('debug', 'Telegram Connect.', true);
+	}
+	onTelegramClose(message) {
+		if (!this.socket) return false;		
+		this.bot = null;
+		this.logging('debug', 'Telegram Close.', true);
+	}
+	onTelegramMessageReceiver(telegramMessage = {}) {
+		if (!this.socket) return false;
+		if (!telegramMessage?.text) return false;
+		
+		this.logging('debug', '[onTelegramMessageReceiver] '+ telegramMessage.text, true);
 	}
 }
 

@@ -8,16 +8,16 @@ class TelegramBotManager {
 		this.keys		= this.env.bot_keys;		
 		this.token		= options['token'] || this.env.api_key;
 		this.chatId		= options['chatId']|| '';
-		this.onConnect	= options['onConnectCallback']||undefined;
-		this.onClose	= options['onCloseCallback']  ||undefined;
-		this.onReceiv	= options['onReceivCallback'] ||undefined;
+		this.onConnect	= options['onConnect']||undefined;
+		this.onClose	= options['onClose']  ||undefined;
+		this.onReceive	= options['onReceive']||undefined;
 		this.botName	= 'TelegramBot';
 		this.bot		= null;
 		this.isInit		= false;
 		this.isConnected= false;
 		if (options['name'] && this.keys[options['name']]) {
 			this.token	= this.keys[options['name']];
-			this.botName= options['name'] + 'TelegramBot';
+			this.botName= options['name'].toUpperCase() + '_TelegramBot';
 		}
 		this.init();
 	}
@@ -49,12 +49,11 @@ class TelegramBotManager {
 				let message = msg.text;
 				This.chatId = msg.chat.id;
 				This.isInit = true;
-				This.isConnected = true;
+				This.connect('Telegram onMessage()');
+				This.onReceive?.(msg);
 				if (message.indexOf('/echo') > -1) {
 					This.send("야호~: "+ message.replace('/echo',''));	
 				}
-				This.onReceiv?.(msg);
-				This.connect('Telegram onMessage()');
 			});
 			This.logging('infor', 'initalize complete.');
 			This.connect('Telegram initalize complete');

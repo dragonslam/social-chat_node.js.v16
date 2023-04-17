@@ -13,10 +13,13 @@ class SocialChartServer {
 		this.io 	= io;
 		this.sockets= io.sockets;
 		this.manager= Manager.create();
+		this.chatGPT= {};
 		this.bot	= Telegram.create({
-			onConnectCallback: this.onTelegramConnect,
-			onCloseCallback	 : this.onTelegramClose,
-			onReceivCallback : this.onTelegramMessageReceiver
+			id		: 'TelegramBot',
+			name	: 'node',
+			onConnect : this.onTelegramConnect,
+			onClose	  : this.onTelegramClose,
+			onReceive : this.onTelegramMessageReceiver
 		});
 		
 		this.counts = 0;
@@ -64,7 +67,7 @@ class SocialChartServer {
 			});
 			
 			currentSocket.on('ai_create', function ( name ) {
-				This.connectAi(currentSocket, session, name);
+				This.onConnectChatGPT(currentSocket, session, name);
 			});
 		});
 		
@@ -106,12 +109,21 @@ class SocialChartServer {
 		if ((session.name != user) && (This.manager.findByName(user) != null)) {
 			var targetSession = This.manager.findByName(user);
 			
-			if (targetSession.ai_user && targetSession.ai_chat) {
+			if (targetSession.isAI && this.chatGPT[targetSession.id]) {
+
 				// OpenAi ChatGPT에 질의하여 답변을 전파한다.
-				targetSession.ai_chat.answer(msg).then(function(responseMsg) {
-					This.logging('debug', '[AiCALL] : '+ targetSession.name +'=>'+ responseMsg);
-					This.sockets.emit('update_chat', {user : targetSession, message : responseMsg});
-				});
+				this.chatGPT[targetSession.id].answer(msg)
+					.then(function(responseMsg) {
+						This.logging('debug', `[ChatGPT] Call : ${targetSession.name}=>${responseMsg}`);
+						This.sockets.emit('update_chat',{user : targetSession, message : responseMsg});
+					})
+					.catch(function(responseErr) {
+						This.logging('debug', `[ChatGPT] Call Error :`, (responseErr?.response?.data || responseErr));
+						This.sockets.emit('update_chat', {
+							user	: targetSession, 
+							message : `ChatGPT Error : ${(responseErr?.response?.data?.error?.message||'ChartGPT Error')}`
+						});
+					});
 			}
 			else {
 				var targetSocket = This.sockets.sockets[targetSession.id];
@@ -185,46 +197,63 @@ class SocialChartServer {
 			this.syncUsers();
 		}
 	}
+
 	onTelegramConnect(message) {
-		if (!this.sockets) return false;
-		this.bot.send(`# Node HTTP Server for express start server.`);
-		this.bot.send(`# Server connect to ${this.env.protocol}://${this.env.host}:${this.env.port}/${this.env.rootPath}`);
-		
-		let userInfo = {id: 'Telegram', name: 'Telegram'};
-		this.sockets.emit('update_chat', {user: userInfo, message: 'Telegram Connect.'});
+		if (!this.sockets || !this.bot) return false;
+		if (this.manager.findByName(this.bot.id) == null) {			
+			this.counts++;
+			this.current++;
+			
+			const tgSession = Session.connect(this.bot.id);
+			tgSession.id	= this.bot.id;
+			tgSession.name 	= this.bot.id+this.counts;
+			tgSession.color	= this.colors[this.counts % this.colors.length];
+			tgSession.isBot = true;
+			this.manager.add( tgSession );
+
+			this.bot.send(`# Node HTTP Server for express start server.`);
+			this.bot.send(`# Server connect to ${this.env.protocol}://${this.env.host}:${this.env.port}/${this.env.rootPath}`);
+
+			this.logging('debug', `[${this.bot.id}] Telegram Connect.`);
+			this.syncUsers();
+		} 
+		else {
+			this.sockets.emit('checkvalidation', "-1" );	
+		}
 	}
 	onTelegramClose(message) {
-		if (!this.sockets) return false;
-		let userInfo = {id: 'Telegram', name: 'Telegram'};
-		this.sockets.emit('update_chat', {user: userInfo, message: 'Telegram Close.'});
+		if (!this.sockets || !this.bot) return false;
+		if (this.manager.find(this.bot.id) != null) {
+			const userInfo = this.manager.find(this.bot.id);
+			this.logging('debug', `[${this.bot.id}] Telegram Closed.`);
+			this.sockets.emit('update_chat', {user: userInfo, message: 'Telegram Close.'});
+		}
 	}
-	onTelegramMessageReceiver(telegramMessage = {}) {
-		if (!this.sockets) return false;
-		if (!telegramMessage?.text) return false;
-
-		const userInfo = Object.assign(telegramMessage, {
-			id	:`telegramId_${telegramMessage.from.id}`, 
-			name:`telegramName_${telegramMessage.from.username}`, 
-		});
-		this.logging('debug', '[onTelegramMessageReceiver] '+ telegramMessage.text);
-		this.sockets.emit('update_chat', {user: userInfo, message: telegramMessage.text});
+	onTelegramMessageReceiver(message = {}) {
+		if (!this.sockets || !this.bot) return false;
+		if (!message?.text) return false;
+		if (this.manager.find(this.bot.id) != null) {
+			const userInfo = this.manager.find(this.bot.id);
+			this.logging('debug', `[${this.bot.id}] Message Receiv:${message.text}`);
+			this.sockets.emit('update_chat', {user: userInfo, message: message.text});
+		}
 	}
 	
-	connectAi(currentSocket, session, name) {
+	onConnectChatGPT(currentSocket, session, name) {
 		if (this.manager.findByName( name ) == null ) {			
 			this.counts++;
 			this.current++;
 			
 			const aiSession = Session.connect('AI Member');
-			aiSession.id	 	= session.id +'#_ai'+ this.counts;
-			aiSession.name 		= name;
-			aiSession.color		= this.colors[this.counts % this.colors.length];
-			aiSession.ai_user	= true;
-			aiSession.ai_temp	= ((Math.floor(Math.random() * 10) + 1) / 10);
-			aiSession.ai_chat	= OpenAi.createServer({temperature : aiSession.ai_temp});
+			aiSession.id	= session.id +'#_ai'+ this.counts;
+			aiSession.name 	= name;
+			aiSession.color	= this.colors[this.counts % this.colors.length];
+			aiSession.isAI  = true;
+			aiSession.aiTemp= ((Math.floor(Math.random() * 10) + 1) / 10);
 			this.manager.add( aiSession );
 
-			this.logging('debug', '[connectAi] '+ aiSession.id +':'+ aiSession.name +':'+ aiSession.ai_temp);
+			this.chatGPT[aiSession.id] = OpenAi.createServer({temperature : aiSession.ai_temp});;
+			this.logging('debug', '[onConnectChatGPT] '+ aiSession.id +':'+ aiSession.name +':'+ aiSession.aiTemp);
 			this.syncUsers();
 		} 
 		else {
